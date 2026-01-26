@@ -4,8 +4,12 @@
 #define MAX_INVENTORY 10
 #define MAX_HEALTH 200
 
-typedef struct Enemy enemy;
-typedef struct Item item;
+#define MOVMENT_SPEED 0.1
+
+#include "stdbool.h"
+
+typedef struct Enemy Enemy;
+typedef struct Item Item;
 
 typedef enum Magic {
     Fire,
@@ -18,16 +22,12 @@ typedef enum Direction{
     North,
     South,
     East,
-    West,
-    NEast,
-    NWest,
-    SEast,
-    SWest
+    West
 } Direction;
 
 typedef struct position{
-    int x;
-    int y;
+    float x;
+    float y;
 } position;
 
 
@@ -41,18 +41,24 @@ typedef struct Player {
     bool shield;
     Item* inventory[MAX_INVENTORY];
     int inventory_count;
+    int selectedItem;
 } Player;
 
 
-Player* createPlayer(char* name, Magic magic);
-void movePlayer(Player* player, Direction dir);
+
+void movePlayer(Player* player);
 int playerAttack(Player* player, Item* item, Enemy* enemy);
 int playerMagic(Player* player, Enemy* enemy );
 void playerLevelUp(Player* player);
-void playerUseItem(Player* player, int selected);
-void playerPickItem(Player* player, Item* item);
-void playerDropItem(Player* player, int selected);
 
+
+void playerUseItem(Player* player);
+void playerSelectItem(Player* player);
+void playerDropItem(Player* player);
+
+Player* createPlayer(char* name, Magic magic);
+void savePlayer(Player* player);
+Player* loadPlayer();
 
 
 #endif

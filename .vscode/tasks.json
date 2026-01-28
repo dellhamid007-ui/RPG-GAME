@@ -13,7 +13,7 @@
                 "${workspaceFolder}/src/components/player.c",
                 "-o",
                 "${workspaceFolder}/game.exe",
-                "-I${workspaceFolder}/include",
+                "-I${workspaceFolder}/libs/raylib/include",
                 "-I${workspaceFolder}/src"
             ],
             "options": {

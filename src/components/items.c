@@ -4,8 +4,6 @@
 #include <string.h>
 #include "items.h"
 #include "enemy.h"
-#include <windows.h>
-#include <shlobj.h>
 
 
 Item* createItem(itemType type, Rarity rarity){

@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "items.h"
 #include "enemy.h"
+#include "world.h"
 #include "../misc/wrapper.h"
-#include "raylib.h"
+#include "../../libs/raylib/include/raylib.h"
 
 
 const char* PLAYER_SAVE_FORMAT = 
@@ -215,16 +217,108 @@ void playerDropItem(Player* player){
 }
 
 
-void movePlayer(Player* player){
-    if (IsKeyDown(KEY_RIGHT)) {
-        player->pos.x += MOVMENT_SPEED;
-        printf("x = %.1f",player->pos.x);
+void movePlayer(Player* player)
+{
+    Vector2 nextPos = player->pos;
+    float dx = 0, dy = 0;
+
+    if (dx != 0 && dy != 0) {
+        float factor = 1.0f / sqrtf(2);
+        dx *= factor;
+        dy *= factor;
     }
-    if (IsKeyDown(KEY_LEFT)) player->pos.x -= MOVMENT_SPEED;
-    if (IsKeyDown(KEY_UP)) player->pos.y -= MOVMENT_SPEED;
-    if (IsKeyDown(KEY_DOWN)) {
-        player->pos.y += MOVMENT_SPEED;
-        printf("y = %.1f",player->pos.y);
-    }
+
+    if (IsKeyDown(KEY_D)) dx += MOVMENT_SPEED;
+    if (IsKeyDown(KEY_A)) dx -= MOVMENT_SPEED;
+    if (IsKeyDown(KEY_W)) dy -= MOVMENT_SPEED;
+    if (IsKeyDown(KEY_S)) dy += MOVMENT_SPEED;
+
+    // Slide along X
+    Rectangle hitboxX = { nextPos.x + dx, nextPos.y, PLAYER_WIDTH, PLAYER_HEIGHT };
+    if (worldCanMove(hitboxX)) nextPos.x += dx;
+
+    // Slide along Y
+    Rectangle hitboxY = { nextPos.x, nextPos.y + dy, PLAYER_WIDTH, PLAYER_HEIGHT };
+    if (worldCanMove(hitboxY)) nextPos.y += dy;
+
+    player->pos = nextPos;
 }
 
+
+void playerSelectItem(Player* player){
+
+    if(IsKeyPressed(KEY_RIGHT)){
+        player->selectedItem++;
+        if(player->selectedItem >= MAX_INVENTORY){
+            player->selectedItem = 0;
+        }
+    }
+
+    if(IsKeyPressed(KEY_LEFT)){
+        player->selectedItem--;
+        if(player->selectedItem<0){
+            player->selectedItem = MAX_INVENTORY -1;
+        }
+    }
+
+}
+
+
+void playerAttack(Player* player, Enemy* enemy){
+     if (!enemy) return;
+
+    Item* sword = player->inventory[player->selectedItem];
+    if (!sword) return;  
+
+    int damage = sword->value;
+    enemy->health -= damage;
+
+    printf("attacked enemy, damage: %d\n", damage);
+
+}
+
+void playerHeal(Player* player){
+    Item* potion = player->inventory[player->selectedItem];
+
+    player->health += potion->value;
+
+    
+    destroyItem(&player->inventory[player->selectedItem]);
+    printf("potion used %d\n", player->health);
+
+}
+
+void playerApplyShield(Player* player){
+    player->shield = true;
+    
+    destroyItem(&player->inventory[player->selectedItem]);
+
+
+}
+
+int playerUseItem(Player* player, Enemy* enemy){
+    if(player->inventory[player->selectedItem] == NULL){
+        printf("no item in slot\n");
+        fflush(stdout);
+        return 0;
+    }
+
+    switch(player->inventory[player->selectedItem]->type){
+        case Sword: playerAttack(player, enemy); break;
+        case Potion: playerHeal(player); break;
+        case Shield: playerApplyShield(player); break;
+    }
+
+    return 1;    
+}
+
+
+
+Rectangle playerGetHitbox(Player* p){
+    return (Rectangle){
+        p->pos.x,
+        p->pos.y,
+        PLAYER_WIDTH,
+        PLAYER_HEIGHT
+    };
+}

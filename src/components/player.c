@@ -106,7 +106,7 @@ Player* loadPlayer(){
             player->inventory[slot] = item;
         }
 
-        
+    printf("x = %.2f , y = %.2f", player->pos.x, player->pos.y);        
 
     fclose(playerFile);
     
@@ -191,12 +191,12 @@ Player* createPlayer(char* name, Magic magic){
     p->health = MAX_HEALTH;
     p->shield = false;
     p->level = 1;
-    Item* i = createItem(Sword, Common);
+    Item* i = createItem(Sword, Legendary);
     p->inventory[0] = i;
     p->inventory_count =1;
-    p->pos.x = 100;
-    p->pos.y = 100;
     p->selectedItem =0;
+
+    placePlayerInRoom(p);
 
     for(int i = 1; i< MAX_INVENTORY; i++){
         p->inventory[i] = NULL;
@@ -277,6 +277,19 @@ void playerAttack(Player* player, Enemy* enemy){
 
 }
 
+void playerMagic(Player* player, Enemy* enemy){
+    if (!enemy) return;
+
+    if(player->cooldown > 0) return;
+
+    if (player->cooldown <= 0){
+        enemy->health -= 25;
+        player->cooldown = 3;
+        printf("attacked enemy\n");
+    }
+
+}
+
 void playerHeal(Player* player){
     Item* potion = player->inventory[player->selectedItem];
 
@@ -306,7 +319,7 @@ int playerUseItem(Player* player, Enemy* enemy){
     switch(player->inventory[player->selectedItem]->type){
         case Sword: playerAttack(player, enemy); break;
         case Potion: playerHeal(player); break;
-        case Shield: playerApplyShield(player); break;
+        case Shield: playerApplyShield(player); return 2;
     }
 
     return 1;    
@@ -321,4 +334,20 @@ Rectangle playerGetHitbox(Player* p){
         PLAYER_WIDTH,
         PLAYER_HEIGHT
     };
+}
+
+
+void playerGainItem(Player* player){
+    if(player->inventory_count == MAX_INVENTORY) return;
+    for(int i =0; i< MAX_INVENTORY; i++){
+        if(player->inventory[i] == NULL){
+
+            Rarity r = GetRandomValue(Common, Legendary);
+            itemType it = GetRandomValue(Sword, Shield);
+            player->inventory[i] = createItem(it, r);
+            player->inventory_count ++;
+            
+            return;
+        }
+    }
 }

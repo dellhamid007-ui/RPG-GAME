@@ -28,3 +28,12 @@ void destroyEnemy(Enemy** enemy){
     free(*enemy);
     *enemy = NULL;
 }
+
+void enemyAttack(Player* player, Enemy* enemy){
+    if(player->shield){
+        player->shield = false;
+    }
+    else{
+        player->health -= enemy->damage;
+    }
+}

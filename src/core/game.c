@@ -9,6 +9,7 @@
 #include "../../libs/raylib/include/raylib.h"
 #include "../../libs/raylib/include/raymath.h"
 #include "../components/world.h"
+#include "../ui/hud.h"
 
 static char buffer[64];
 
@@ -17,9 +18,20 @@ static Camera2D camera;
 static Player player;
 static GameState currentState = GAME_FREE_ROAM;
 static float encounterDistance = 0.0f;
-static const float ENCOUNTER_THRESHOLD = 500.0f;
+static const float ENCOUNTER_THRESHOLD = 100.0f;
 static Enemy* activeEnemy = NULL;
 static Battle battle;
+
+void saveGame(Player *player){
+    savePlayer(player);
+    worldSave();
+}
+
+Player* loadGame(){
+    worldLoad();
+    Player *p = loadPlayer();
+    return p;
+}
 
 void initGame(void) {
     SetTargetFPS(30);
@@ -28,10 +40,13 @@ void initGame(void) {
     camera.target = player.pos;
     camera.offset = (Vector2){ 640, 360 }; 
     camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
+    camera.zoom = 2.5f;
 
-    worldInit();
-    Player* p = loadPlayer();
+    hudInit();
+
+    worldGenerate();
+
+    Player* p = createPlayer("midou", Fire);
     player = *p;
     free(p);
 }
@@ -52,7 +67,9 @@ void initRandomEncounter(void) {
 
 void updateFreeRoam(float dt) {
     Vector2 oldPos = player.pos;
+
     movePlayer(&player);
+
     sprintf(buffer, "x = %.2f, y = %.2f",player.pos.x, player.pos.y);
 
     camera.target = player.pos;
@@ -63,6 +80,23 @@ void updateFreeRoam(float dt) {
     if (encounterDistance >= ENCOUNTER_THRESHOLD) {
         initRandomEncounter();
         encounterDistance = 0.0f;
+    }
+
+
+    playerSelectItem(&player);
+
+    if(IsKeyPressed(KEY_P)){
+        saveGame(&player);
+    }
+    if(IsKeyPressed(KEY_L)){
+        Player *p =loadGame();
+        player = *p;
+        free(p);
+    }
+
+
+    if(IsKeyPressed(KEY_K)){
+        playerDropItem(&player);
     }
 
 }
@@ -76,19 +110,29 @@ void updateFight(float dt) {
 
     playerSelectItem(&player);
 
+    if(IsKeyPressed(KEY_K)){
+        playerDropItem(&player);
+    }
+
+
     if(battle.turn == TURN_PLAYER){
         if(IsKeyPressed(KEY_F)){
-            if(playerUseItem(&player, activeEnemy)){
+            if(playerUseItem(&player, activeEnemy) == 1){
                 battle.turn = TURN_ENEMY;
+                player.cooldown--;
 
                 if (activeEnemy->health <= 0){ 
                     activeEnemy->health = 0;
                     printf("enemy defeated\n");
                     destroyEnemy(&activeEnemy);
+                    playerGainItem(&player);
                     battle.turn = TURN_END;
                 }
 
             }
+        }
+        if(IsKeyPressed(KEY_G)){
+            playerMagic(&player, activeEnemy);
         }
     }
 
@@ -100,20 +144,19 @@ void updateFight(float dt) {
         }
         battle.enemyDelay += GetFrameTime();
         
-        if(battle.enemyDelay >= 2.0f){
-            if(player.shield){
-                player.shield = false;
-            }
-            else{
-                player.health -= activeEnemy->damage;
-                battle.turn = TURN_PLAYER;
-            }
+        if(battle.enemyDelay >= 0.5f){
+            
+            enemyAttack(&player, activeEnemy);
+
             if(player.health <= 0){
                 currentState = GAME_PLAYER_DEFEATED;
             }
+            else{
+                battle.turn = TURN_PLAYER;
+            }
 
             battle.enemyAttacked =0;
-            
+
         }
     }
 
@@ -168,6 +211,8 @@ void updateGame(float dt) {
     }
 }
 
+
+
 void drawFreeRoam(float dt){
     BeginDrawing();
     ClearBackground(WHITE);
@@ -179,6 +224,8 @@ void drawFreeRoam(float dt){
         EndMode2D();
 
         DrawText(buffer, 100, 100, 20, BLACK);
+
+        drawInventory(&player);
 
     EndDrawing();
 
@@ -197,6 +244,8 @@ void drawFight(float dt){
         BeginDrawing();
         ClearBackground(WHITE);
         DrawText(buffer, 100, 100, 20, BLACK);
+
+        drawInventory(&player);
 
 
     EndDrawing();
@@ -253,6 +302,7 @@ void drawGame(float dt) {
 
             
     }
+    
 }
 
 

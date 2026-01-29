@@ -11,15 +11,13 @@
 
 
 #include "stdbool.h"
+#include "../../libs/raylib/include/raylib.h"
 
 
 
 typedef struct Enemy Enemy;
 typedef struct Item Item;
-typedef struct Vector2{
-    float x;
-    float y;
-} Vector2;
+
 
 typedef struct Rectangle Rectangle;
 
@@ -66,6 +64,7 @@ void playerLevelUp(Player* player);
 int playerUseItem(Player* player, Enemy* enemy);
 void playerSelectItem(Player* player);
 void playerDropItem(Player* player);
+void playerGainItem(Player* player);
 
 Player* createPlayer(char* name, Magic magic);
 void savePlayer(Player* player);

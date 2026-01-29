@@ -4,7 +4,7 @@
 #include <string.h>
 #include "items.h"
 #include "enemy.h"
-
+#include "../../libs/raylib/include/raylib.h"
 
 Item* createItem(itemType type, Rarity rarity){
     Item* item = malloc(sizeof(Item));

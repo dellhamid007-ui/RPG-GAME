@@ -25,6 +25,8 @@ void worldInit(void);
 void worldGenerate(void);
 int worldCanMove(Rectangle hitbox);
 void worldDraw(void);
+void worldUnload(void);
+
 
 
 int worldSave();

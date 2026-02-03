@@ -40,7 +40,7 @@ void hudInit(){
 
 
 void drawInventory(Player *player){
-    const int SLOT_SIZE = 48;
+    const int SLOT_SIZE = 72;
     const int SLOT_PADDING = 6;
     const int HOTBAR_SLOTS = MAX_INVENTORY;
 

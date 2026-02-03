@@ -54,9 +54,9 @@ typedef struct Player {
 
 
 void movePlayer(Player* player);
-void playerAttack(Player* player, Enemy* enemy);
-void playerMagic(Player* player, Enemy* enemy );
-void playerHeal(Player* player);
+void playerAttack(Player* player, Enemy* enemy, int swordValue);
+void playerMagic(Player* player, Enemy* enemy);
+void playerHeal(Player* player, int potionValue);
 void playerApplyShield(Player* player);
 void playerLevelUp(Player* player);
 
@@ -72,6 +72,7 @@ Player* loadPlayer();
 
 
 Rectangle playerGetHitbox(Player* player);
+void playerDraw(const Player* p);
 
 
 #endif

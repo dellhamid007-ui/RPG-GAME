@@ -6,7 +6,6 @@
 #include "items.h"
 #include "enemy.h"
 #include "world.h"
-#include "../misc/wrapper.h"
 #include "../../libs/raylib/include/raylib.h"
 
 
@@ -28,19 +27,9 @@ Player* loadPlayer(){
     Player* player = malloc(sizeof(Player));
 
     FILE* playerFile;
-    char path[MAX_PATH_LEN];
     
-    getDocumentsPath(path);
     
-    char fullPath[MAX_PATH_LEN];
-    snprintf(fullPath, sizeof(fullPath), "%s\\RPG\\player.dat", path);
-    
-    // Create directory if it doesn't exist
-    char dirPath[MAX_PATH_LEN];
-    snprintf(dirPath, sizeof(dirPath), "%s\\RPG", path);
-    createDirectory(dirPath);
-    
-    fopen_s(&playerFile, fullPath, "r");
+    fopen_s(&playerFile, "\\Data\\player.dat", "r");
     if (playerFile == NULL) {
         printf("Error: Could not open file for reading\n");
         free(player);
@@ -119,19 +108,9 @@ void savePlayer(Player* player){
     int tempCount = player->inventory_count;
     
     FILE* playerFile;
-    char path[MAX_PATH_LEN];
+
     
-    getDocumentsPath(path);
-    
-    char fullPath[MAX_PATH_LEN];
-    snprintf(fullPath, sizeof(fullPath), "%s\\RPG\\player.dat", path);
-    
-    // Create directory if it doesn't exist
-    char dirPath[MAX_PATH_LEN];
-    snprintf(dirPath, sizeof(dirPath), "%s\\RPG", path);
-    createDirectory(dirPath);
-    
-    fopen_s(&playerFile, fullPath, "w");
+    fopen_s(&playerFile, "\\Data\\player.dat", "w");
     if (playerFile == NULL) {
         printf("Error: Could not open file for writing\n");
         return;
@@ -175,7 +154,7 @@ void savePlayer(Player* player){
     }
     
     fclose(playerFile);
-    printf("Debug: Player saved successfully to %s\n", fullPath);
+    printf("Debug: Player saved successfully to\n");
 
 
 }
@@ -264,16 +243,12 @@ void playerSelectItem(Player* player){
 }
 
 
-void playerAttack(Player* player, Enemy* enemy){
-     if (!enemy) return;
+void playerAttack(Player* player, Enemy* enemy, int swordValue){
+     if (!enemy) return; 
 
-    Item* sword = player->inventory[player->selectedItem];
-    if (!sword) return;  
+    enemy->health -= swordValue;
 
-    int damage = sword->value;
-    enemy->health -= damage;
-
-    printf("attacked enemy, damage: %d\n", damage);
+    printf("attacked enemy, damage: %d\n", swordValue);
 
 }
 
@@ -290,23 +265,16 @@ void playerMagic(Player* player, Enemy* enemy){
 
 }
 
-void playerHeal(Player* player){
-    Item* potion = player->inventory[player->selectedItem];
+void playerHeal(Player* player, int potionValue){
 
-    player->health += potion->value;
+    player->health += potionValue;
 
-    
-    destroyItem(&player->inventory[player->selectedItem]);
     printf("potion used %d\n", player->health);
 
 }
 
 void playerApplyShield(Player* player){
     player->shield = true;
-    
-    destroyItem(&player->inventory[player->selectedItem]);
-
-
 }
 
 int playerUseItem(Player* player, Enemy* enemy){
@@ -315,14 +283,20 @@ int playerUseItem(Player* player, Enemy* enemy){
         fflush(stdout);
         return 0;
     }
+    
+    Item tmp = *player->inventory[player->selectedItem];
 
-    switch(player->inventory[player->selectedItem]->type){
-        case Sword: playerAttack(player, enemy); break;
-        case Potion: playerHeal(player); break;
-        case Shield: playerApplyShield(player); return 2;
+    if(tmp.type != Sword){
+        destroyItem(&player->inventory[player->selectedItem]);
+        player->inventory_count --;
     }
 
-    return 1;    
+
+    switch(tmp.type){
+        case Sword: playerAttack(player, enemy, tmp.value); return 1;
+        case Potion: playerHeal(player, tmp.value); return 0;
+        case Shield: playerApplyShield(player); return 0;
+    }    
 }
 
 
@@ -336,18 +310,60 @@ Rectangle playerGetHitbox(Player* p){
     };
 }
 
+int biasedRarity(){
+
+    int weights[] = {50, 20, 15, 10, 5};
+    int tWeight = 100;
+
+    int randVal = rand() % tWeight;
+
+    if(randVal < weights[0]){
+        return 0;
+    }
+    else if(randVal <weights[1] + weights[0]){
+        return 1;
+    }
+    else if(randVal < weights[2] + weights[1] + weights[0]){
+        return 2;
+    }
+    else if(randVal < weights[3] + weights[2] + weights[1] + weights[0]){
+        return 3;
+    }
+    else return 4;
+}
+
+int biasedType(){
+    int weights[] = {60, 30, 10};
+    int tWeights = 100;
+
+    int randVal = rand() % tWeights;
+
+    if(randVal < weights[0]){
+        return 1;
+    }
+    else if(randVal < weights[0] + weights[1]){
+        return 2;
+    }
+    else {
+        return 0;
+    }
+}
 
 void playerGainItem(Player* player){
     if(player->inventory_count == MAX_INVENTORY) return;
     for(int i =0; i< MAX_INVENTORY; i++){
         if(player->inventory[i] == NULL){
 
-            Rarity r = GetRandomValue(Common, Legendary);
-            itemType it = GetRandomValue(Sword, Shield);
+            Rarity r = biasedRarity();
+            itemType it = biasedType();
             player->inventory[i] = createItem(it, r);
             player->inventory_count ++;
             
             return;
         }
     }
+}
+
+void playerDraw(const Player* p) {
+    DrawRectangle(p->pos.x, p->pos.y, PLAYER_WIDTH, PLAYER_HEIGHT, BLUE);
 }

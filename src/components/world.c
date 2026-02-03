@@ -7,8 +7,6 @@
 #include "enemy.h"
 #include "../../libs/raylib/include/raylib.h"
 #include "world.h"
-#include "../misc/wrapper.h"
-
 
 static TileType map[MAP_H][MAP_W];
 static Room rooms[64];
@@ -16,6 +14,7 @@ static int roomCount =0;
 
 static Texture2D texWall;
 static Texture2D texFloor;
+
 
 void worldLoadTextures(void) {
     texWall  = LoadTexture("assets/tiles/wall.png");
@@ -38,7 +37,7 @@ void worldInit(void) {
             map[y][x] = TILE_WALL;
     roomCount = 0;
 
-    void worldLoadTextures(void);
+    worldLoadTextures();
 }
 
 
@@ -56,16 +55,15 @@ int worldCanMove(Rectangle nextPos)
     }
     return 1;
 }
-
 void worldDraw(void)
 {
     for (int y = 0; y < MAP_H; y++) {
         for (int x = 0; x < MAP_W; x++) {
             Rectangle tileRect = { x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE };
             if (map[y][x] == TILE_WALL)
-                DrawTexture(texWall, x, y, WHITE);
+                DrawTexture(texWall, x* TILE_SIZE, y* TILE_SIZE, WHITE);
             else
-                DrawTexture(texFloor, x, y, WHITE);
+                DrawTexture(texFloor, x* TILE_SIZE, y* TILE_SIZE, WHITE);
         }
     }
 }
@@ -122,18 +120,7 @@ void worldGenerate(void){
 
 int worldSave(void) {
 
-    char path[MAX_PATH_LEN];
-    
-    getDocumentsPath(path);
-    
-    char fullPath[MAX_PATH_LEN];
-    snprintf(fullPath, sizeof(fullPath), "%s\\RPG\\map.dat", path);
-    
-    char dirPath[MAX_PATH_LEN];
-    snprintf(dirPath, sizeof(dirPath), "%s\\RPG", path);
-    createDirectory(dirPath);
-
-    FILE* f = fopen(fullPath, "wb");
+    FILE* f = fopen("\\Data\\map.dat", "wb");
     if (!f) return 0;
     fwrite(map, sizeof(TileType), MAP_W*MAP_H, f);
     fclose(f);
@@ -142,18 +129,7 @@ int worldSave(void) {
 
 void worldLoad(void) {
 
-    char path[MAX_PATH_LEN];
-    
-    getDocumentsPath(path);
-    
-    char fullPath[MAX_PATH_LEN];
-    snprintf(fullPath, sizeof(fullPath), "%s\\RPG\\map.dat", path);
-    
-    char dirPath[MAX_PATH_LEN];
-    snprintf(dirPath, sizeof(dirPath), "%s\\RPG", path);
-    createDirectory(dirPath);
-
-    FILE* f = fopen(fullPath, "rb");
+    FILE* f = fopen("\\Data\\map.dat", "rb");
     if (!f) return;
     fread(map, sizeof(TileType), MAP_W*MAP_H, f);
     fclose(f);
@@ -172,4 +148,9 @@ void placePlayerInRoom(Player* player) {
 
     player->pos.x = px * TILE_SIZE + TILE_SIZE/2; 
     player->pos.y = py * TILE_SIZE + TILE_SIZE/2;
+}
+
+
+void worldUnload(void){
+    worldUnloadTextures();
 }

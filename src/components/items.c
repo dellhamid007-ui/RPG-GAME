@@ -18,18 +18,18 @@ Item* createItem(itemType type, Rarity rarity){
 int calcValue(Item item){
     switch(item.type){
         case Sword: switch(item.rarity){
-            case Common: return 5; break;
-            case Uncommon: return 10; break;
-            case Rare: return 15; break;
-            case Mythical: return 20; break;
-            case Legendary: return 25; break;
-        } break;
-        case Potion: switch(item.rarity){
             case Common: return 10; break;
             case Uncommon: return 20; break;
             case Rare: return 30; break;
-            case Mythical: return 40; break;
-            case Legendary: return 50; break;
+            case Mythical: return 35; break;
+            case Legendary: return 40; break;
+        } break;
+        case Potion: switch(item.rarity){
+            case Common: return 30; break;
+            case Uncommon: return 40; break;
+            case Rare: return 50; break;
+            case Mythical: return 60; break;
+            case Legendary: return 70; break;
         }break;
         case Shield: return 1;
     }

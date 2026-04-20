@@ -12,73 +12,59 @@
 #include "../core/gameContext.h"
 
 
-static char buffer[64];
-char* bufferPtr = buffer;
-
-static Camera2D camera;
-Camera2D* cameraPtr = &camera;
-
-static Player player;
-Player*  playerPtr = &player;
-
-static GameState currentState = GAME_FREE_ROAM;
-GameState* statePtr = &currentState;
-
-static float encounterDistance = 0.0f;
-float* encDisPtr = &encounterDistance;
-
-static const float ENCOUNTER_THRESHOLD = 100.0f;
-const float* encThreshPtr = &ENCOUNTER_THRESHOLD;
-
-
-static Enemy* activeEnemy = NULL;
-Enemy** enemyPtr = &activeEnemy;
-
-
-static Battle battle;
-Battle* battlePtr = &battle;
-
-static RenderTexture2D darknessRT;
-static float torchRadius = 120.0f;
-
+static GameContext gameCtx;
+GameContext* ctxPtr = &gameCtx;
 
 
 void initGame(void) {
     SetTargetFPS(30);
     InitWindow(1920, 1080, "My RPG");
+
+    gameCtx.camera.target = gameCtx.player.pos;
+    gameCtx.camera.offset = (Vector2){960, 540};
+    gameCtx.camera.rotation = 0.0f;
+    gameCtx.camera.zoom = 2.5f;
  
-    camera.target = player.pos;
-    camera.offset = (Vector2){960, 540}; 
-    camera.rotation = 0.0f;
-    camera.zoom = 2.5f;
+ //   camera.target = player.pos;
+ //   camera.offset = (Vector2){960, 540}; 
+ //   camera.rotation = 0.0f;
+ //   camera.zoom = 2.5f;
+    initRender();
 
     hudInit();
+    playerInit();
 
     worldGenerate();
 
     Player* p = createPlayer("midou", Fire);
-    player = *p;
+    gameCtx.player = *p;
     free(p);
 
-    darknessRT = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+    gameCtx.currentState = GAME_MAIN_MENU;
+    gameCtx.activeEnemy = NULL;
+    
+    gameCtx.encounterThreshold = 20000.0f;
+    gameCtx.encounterDistance = 0.0f;
 
+
+    
 }
 
 void drawDarkness(void)
 {
     Vector2 center = {
-        player.pos.x - camera.target.x + GetScreenWidth() / 2,
-        player.pos.y - camera.target.y + GetScreenHeight() / 2
+        gameCtx.player.pos.x - gameCtx.camera.target.x + GetScreenWidth() / 2,
+        gameCtx.player.pos.y - gameCtx.camera.target.y + GetScreenHeight() / 2
     };
 
-    BeginTextureMode(darknessRT);
+    BeginTextureMode(gameCtx.darknessRT);
         ClearBackground((Color){ 0, 0, 0, 220 });
 
         BeginBlendMode(BLEND_ALPHA);
             DrawCircle(
                 center.x + PLAYER_WIDTH / 2,
                 center.y + PLAYER_HEIGHT / 2,
-                torchRadius,
+                gameCtx.torchRadius,
                 (Color){ 255, 255, 255, 50 }
             );
         EndBlendMode();
@@ -91,11 +77,11 @@ void gameLoop(void) {
     while (!WindowShouldClose()) {
     float dt = GetFrameTime();
 
-    updateGame(dt);
+    updateGame(ctxPtr, dt);
 
-    drawGame(dt);
+    drawGame(ctxPtr, dt);
     
-    DrawText(buffer, 100, 100, 20, BLACK);
+    DrawText(gameCtx.buffer, 100, 100, 20, BLACK);
     
     }
 }
@@ -103,5 +89,6 @@ void gameLoop(void) {
 void cleanupGame(void) {
     CloseWindow();
     worldUnload();
-    UnloadRenderTexture(darknessRT);
+    playerUnload();
+    UnloadRenderTexture(gameCtx.darknessRT);
 }

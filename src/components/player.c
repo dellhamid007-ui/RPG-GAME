@@ -7,6 +7,34 @@
 #include "enemy.h"
 #include "world.h"
 #include "../../libs/raylib/include/raylib.h"
+#include "../../libs/raylib/include/raymath.h"
+
+static RenderTexture2D lightMask;
+static Texture2D lightGradient;
+
+static Texture2D createLightTexture(int radius);
+
+
+void playerLightingInit(void){
+    lightMask = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+    lightGradient = createLightTexture(180);
+}
+
+void playerLightingUnload(void){
+    UnloadRenderTexture(lightMask);
+    UnloadTexture(lightGradient);
+}
+
+
+
+
+void playerInit(void){
+
+}
+
+void playerUnload(void){
+    playerLightingUnload();
+}
 
 
 const char* PLAYER_SAVE_FORMAT = 
@@ -26,10 +54,9 @@ Player* loadPlayer(){
 
     Player* player = malloc(sizeof(Player));
 
-    FILE* playerFile;
+    FILE* playerFile = fopen("Data/player.dat", "r");
     
     
-    fopen_s(&playerFile, "\\Data\\player.dat", "r");
     if (playerFile == NULL) {
         printf("Error: Could not open file for reading\n");
         free(player);
@@ -37,7 +64,7 @@ Player* loadPlayer(){
     }
 
     
-    int itemsRead = fscanf_s(playerFile, 
+    int itemsRead = fscanf(playerFile, 
             "name: %19s\n"
             "pos x: %f\n"
             "pos y: %f\n"
@@ -50,7 +77,6 @@ Player* loadPlayer(){
             "selected item: %d\n"
             "inventory:\n",
             player->name,
-            sizeof(player->name),
             &player->pos.x, &player->pos.y,
             &player->health,
             &player->level,
@@ -107,10 +133,9 @@ void savePlayer(Player* player){
 
     int tempCount = player->inventory_count;
     
-    FILE* playerFile;
+    FILE* playerFile = fopen("Data/player.dat", "w");
 
     
-    fopen_s(&playerFile, "\\Data\\player.dat", "w");
     if (playerFile == NULL) {
         printf("Error: Could not open file for writing\n");
         return;
@@ -363,6 +388,62 @@ void playerGainItem(Player* player){
         }
     }
 }
+
+void playerDrawLighting(const Player* player, Camera2D camera){
+    // 1) Draw light into the mask
+    BeginTextureMode(lightMask);
+        ClearBackground((Color){0,0,0,255}); // full darkness
+        // Draw player light
+        BeginBlendMode(BLEND_ALPHA); // simple alpha
+            // Transform player pos to mask coordinates (with camera)
+            Vector2 screenPos = GetWorldToScreen2D(player->pos, camera);
+            DrawTexture(
+                lightGradient,
+                screenPos.x - lightGradient.width/2,
+                screenPos.y - lightGradient.height/2,
+                WHITE
+            );
+        EndBlendMode();
+    EndTextureMode();
+
+    // 2) Apply darkness over the world
+    BeginBlendMode(BLEND_MULTIPLIED);
+        DrawTextureRec(
+            lightMask.texture,
+            (Rectangle){0,0, lightMask.texture.width, -lightMask.texture.height},
+            (Vector2){0,0},
+            WHITE
+        );
+    EndBlendMode();
+}
+
+
+
+static Texture2D createLightTexture(int radius){
+    Image img = GenImageColor(radius*2, radius*2, BLANK);
+
+    Vector2 center = {radius, radius};
+
+    for(int y=0; y< radius*2 ; y++){
+        for(int x=0; x< radius*2; x++){
+
+            float dist = Vector2Distance((Vector2){x,y}, center);
+            float alpha = 1.0f - (dist/radius);
+
+            if(alpha < 0) alpha = 0;
+
+            Color c = {255,255,255,(unsigned char)(alpha*255)};
+            ImageDrawPixel(&img, x,y,c);
+
+        }
+    }
+
+    Texture2D tex = LoadTextureFromImage(img);
+    UnloadImage(img);
+
+    return tex;
+}
+
 
 void playerDraw(const Player* p) {
     DrawRectangle(p->pos.x, p->pos.y, PLAYER_WIDTH, PLAYER_HEIGHT, BLUE);

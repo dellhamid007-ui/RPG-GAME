@@ -15,11 +15,21 @@ static Texture2D iconPotion;
 static Texture2D iconShield;
 static Texture2D iconEmpty;
 
+static Texture2D healthColumn;
+static Texture2D healthFrame;
+static Texture2D healthShield;
+
 static void loadIcons(){
     iconSword  = LoadTexture("assets/icons/sword.png");
     iconPotion = LoadTexture("assets/icons/potion.png");
     iconShield = LoadTexture("assets/icons/shield.png");
     iconEmpty  = LoadTexture("assets/icons/empty.png");
+}
+
+static void loadHealthBar(){
+    healthColumn = LoadTexture("assets/hud/healthColumn.png");
+    healthFrame = LoadTexture("assets/hud/healthFrame.png");
+    healthShield = LoadTexture("assets/hud/healthShield.png");
 }
 
 static Color getRarityColor(Rarity rarity) {
@@ -35,7 +45,10 @@ static Color getRarityColor(Rarity rarity) {
 
 void hudInit(){
     loadIcons();
+    loadHealthBar();
 }
+
+
 
 
 
@@ -97,5 +110,29 @@ void drawInventory(Player *player){
     }
 }
 
+void drawHealthBar(Player* player){
+    const int COLUMN_HEIGHT = 16;
+
+    int totalColumns = player->health;
+
+    int xOffset = 100;
+    int yOffset = 100;
+
+    for(int i =0; i<totalColumns; i++){
+        int x = xOffset + i*2;
+
+        DrawTexturePro(healthColumn,(Rectangle){0,0,1,16}, (Rectangle){x,yOffset, 2, 64}, (Vector2){0,0}, 0.0f, WHITE);
+    }
+
+    DrawTexturePro(healthFrame,(Rectangle){0,0,202,18}, (Rectangle){xOffset-1, yOffset-1, 404, 66}, (Vector2){0,0}, 0.0f, WHITE);
+    if(player->shield){
+        DrawTexturePro(healthShield,(Rectangle){0,0,16,16}, (Rectangle){xOffset+20, yOffset+ 72, 64, 64}, (Vector2){0,0}, 0.0f, WHITE);
+    }
+}
+
+void drawHud(Player* player){
+    drawHealthBar(player);
+    drawInventory(player);
+}
 
 

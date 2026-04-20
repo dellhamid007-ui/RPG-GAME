@@ -6,8 +6,19 @@
 #include "enemy.h"
 
 
+static Texture2D enemyHealthColumn;
+static Texture2D enemyHealthFrame;
+
+
+static void loadEnemyAssets(){
+    enemyHealthColumn = LoadTexture("assets/hud/enemyHealthColumn.png");
+    enemyHealthFrame = LoadTexture("assets/hud/enemyHealthFrame.png");
+}
 
 Enemy* createEnemy(enemyClass eClass, int level){
+
+    loadEnemyAssets();
+
     Enemy* ePtr = malloc(sizeof(*ePtr));
 
     ePtr->eClass = eClass;
@@ -36,4 +47,29 @@ void enemyAttack(Player* player, Enemy* enemy){
     else{
         player->health -= enemy->damage;
     }
+}
+
+void drawEnemyHealthBar(Enemy* enemy){
+    int screenW = GetScreenWidth();
+    int screenH = GetScreenHeight();
+
+    const int COLUMN_HEIGHT = 16;
+
+    int totalColumns = enemy->health;
+
+    int xOffset = screenW - 700;
+    int yOffset = 100;
+
+    for(int i =0; i<totalColumns; i++){
+        int x = xOffset + i*2;
+
+        DrawTexturePro(enemyHealthColumn,(Rectangle){0,0,1,16}, (Rectangle){x,yOffset, 2, 64}, (Vector2){0,0}, 0.0f, WHITE);
+    }
+
+    DrawTexturePro(enemyHealthFrame,(Rectangle){0,0,202,18}, (Rectangle){xOffset-1, yOffset-1, 404, 66}, (Vector2){0,0}, 0.0f, WHITE);
+}
+
+
+void drawEnemy(Enemy* enemy){
+    drawEnemyHealthBar(enemy);
 }

@@ -12,16 +12,10 @@
 #include "../core/game.h"
 #include "../core/logic.h"
 #include "../core/gameContext.h"
+#include "../ui/render.h"
 
-extern Player* playerPtr;
-extern Camera2D* cameraPtr;
-extern GameState* statePtr;
-extern Enemy** enemyPtr;
-extern Battle* battlePtr;
-extern char* bufferPtr;
-extern float* encThreshPtr;
-extern float* encDisPtr;
-
+extern GameContext* ctxPtr;
+extern menuState defaultState;
 
 
 void saveGame(Player *player){
@@ -35,158 +29,168 @@ Player* loadGame(){
     return p;
 }
 
-void initRandomEncounter(void) {
+void initRandomEncounter(GameContext* ctxPtr) {
     enemyClass type = GetRandomValue(Zombie, Spider);
-    int level = playerPtr->level;
+    int level = ctxPtr->player.level;
 
-    *enemyPtr = createEnemy(type, level);
+    ctxPtr->activeEnemy = createEnemy(type, level);
 
-    if (*enemyPtr != NULL) {
-        battlePtr->turn = TURN_PLAYER;
-        battlePtr->battleOver = 0;
-        *statePtr = GAME_FIGHT;
+    if (ctxPtr->activeEnemy != NULL) {
+        ctxPtr->battle.turn = TURN_PLAYER;
+        ctxPtr->battle.battleOver = 0;
+        ctxPtr->currentState = GAME_FIGHT;
     }
 }
 
-void updateFreeRoam(float dt) {
-    Vector2 oldPos = playerPtr->pos;
+void updateFreeRoam(GameContext* ctxPtr, float dt) {
+    Vector2 oldPos = ctxPtr->player.pos;
 
-    movePlayer(playerPtr);
+    movePlayer(&(ctxPtr->player));
 
-    sprintf(bufferPtr, "x = %.2f, y = %.2f",playerPtr->pos.x, playerPtr->pos.y);
+    sprintf(ctxPtr->buffer, "x = %.2f, y = %.2f", ctxPtr->player.pos.x, ctxPtr->player.pos.y);
 
-    cameraPtr->target = playerPtr->pos;
+    ctxPtr->camera.target = ctxPtr->player.pos;
 
-    float moved = Vector2Distance(oldPos, playerPtr->pos);
-    *encDisPtr += moved;
+    float moved = Vector2Distance(oldPos, ctxPtr->player.pos);
+    ctxPtr->encounterDistance += moved;
 
-    if (*encDisPtr >= *encThreshPtr) {
-        initRandomEncounter();
-        *encDisPtr = 0.0f;
+    if (ctxPtr->encounterDistance >= ctxPtr->encounterThreshold) {
+        initRandomEncounter(ctxPtr);
+        ctxPtr->encounterDistance = 0.0f;
     }
 
 
-    playerSelectItem(playerPtr);
+    playerSelectItem(&(ctxPtr->player));
 
     if(IsKeyPressed(KEY_P)){
-        playerGainItem(playerPtr);
+        saveGame(&(ctxPtr->player));
     }
     if(IsKeyPressed(KEY_L)){
         Player *p =loadGame();
-        *playerPtr = *p;
+        ctxPtr->player = *p;
         free(p);
+    }
+    if(IsKeyPressed(KEY_ESCAPE)){
+        ctxPtr->currentState = GAME_MAIN_MENU;
+        defaultState = mainMenuOption;
     }
 
 
     if(IsKeyPressed(KEY_K)){
-        playerDropItem(playerPtr);
+        playerDropItem(&(ctxPtr->player));
     }
 
 }
 
-void updateMainMenu(float dt) {}
+void updateMainMenu(GameContext* ctxPtr, float dt) {
+    switch(defaultState){
+        case newGameOption: ctxPtr->currentState = GAME_FREE_ROAM; break;
+        case loadGameOption: ctxPtr->currentState = GAME_FREE_ROAM; ctxPtr->player = *loadGame(); break;
+        case exitGameOption: cleanupGame();
+    }
+}
 
 
-void updateFight(float dt) {
-    sprintf(bufferPtr, "player: %d\n enemy %d", playerPtr->health, (*enemyPtr)->health);
+void updateFight(GameContext* ctxPtr, float dt) {
+    sprintf(ctxPtr->buffer, "player: %d\n enemy %d", ctxPtr->player.health, ctxPtr->activeEnemy->health);
 
-    playerSelectItem(playerPtr);
+    playerSelectItem(&(ctxPtr->player));
 
     if(IsKeyPressed(KEY_K)){
-        playerDropItem(playerPtr);
+        playerDropItem(&(ctxPtr->player));
     }
 
 
-    if(battlePtr->turn == TURN_PLAYER){
+    if(ctxPtr->battle.turn == TURN_PLAYER){
         if(IsKeyPressed(KEY_F)){
-            if(playerUseItem(playerPtr, *enemyPtr) == 1){
-                battlePtr->turn = TURN_ENEMY;
-                playerPtr->cooldown--;
+            if(playerUseItem(&(ctxPtr->player), ctxPtr->activeEnemy) == 1){
+                ctxPtr->battle.turn = TURN_ENEMY;
+                ctxPtr->player.cooldown--;
 
-                if ((*enemyPtr)->health <= 0){ 
-                    (*enemyPtr)->health = 0;
+                if (ctxPtr->activeEnemy->health <= 0){ 
+                    ctxPtr->activeEnemy->health = 0;
                     printf("enemy defeated\n");
-                    destroyEnemy(enemyPtr);
-                    playerGainItem(playerPtr);
-                    battlePtr->turn = TURN_END;
+                    destroyEnemy(&(ctxPtr->activeEnemy));
+                    playerGainItem(&(ctxPtr->player));
+                    ctxPtr->battle.turn = TURN_END;
                 }
 
             }
         }
         if(IsKeyPressed(KEY_G)){
-            playerMagic(playerPtr, *enemyPtr);
+            playerMagic(&(ctxPtr->player), ctxPtr->activeEnemy);
         }
     }
 
-    if(battlePtr->turn == TURN_ENEMY){
+    if(ctxPtr->battle.turn == TURN_ENEMY){
 
-        if (!battlePtr->enemyAttacked) {
-            battlePtr->enemyDelay = 0.0f;
-            battlePtr->enemyAttacked = 1;
+        if (!ctxPtr->battle.enemyAttacked) {
+            ctxPtr->battle.enemyDelay = 0.0f;
+            ctxPtr->battle.enemyAttacked = 1;
         }
-        battlePtr->enemyDelay += GetFrameTime();
+        ctxPtr->battle.enemyDelay += GetFrameTime();
         
-        if(battlePtr->enemyDelay >= 0.5f){
+        if(ctxPtr->battle.enemyDelay >= 0.5f){
             
-            enemyAttack(playerPtr, (*enemyPtr));
+            enemyAttack(&(ctxPtr->player), ctxPtr->activeEnemy);
 
-            if(playerPtr->health <= 0){
-                *statePtr = GAME_PLAYER_DEFEATED;
+            if(ctxPtr->player.health <= 0){
+                ctxPtr->currentState = GAME_PLAYER_DEFEATED;
             }
             else{
-                battlePtr->turn = TURN_PLAYER;
+                ctxPtr->battle.turn = TURN_PLAYER;
             }
 
-            battlePtr->enemyAttacked =0;
+            ctxPtr->battle.enemyAttacked =0;
 
         }
     }
 
 
-    if(battlePtr->turn == TURN_END){
-        battlePtr->battleOver = 1;
+    if(ctxPtr->battle.turn == TURN_END){
+        ctxPtr->battle.battleOver = 1;
     }
 
-    if(battlePtr->battleOver){
-        *statePtr = GAME_FREE_ROAM;
+    if(ctxPtr->battle.battleOver){
+        ctxPtr->currentState = GAME_FREE_ROAM;
     }
 
 }
 
-void updateDialogue(float dt) {}
+void updateDialogue(GameContext* ctxPtr, float dt) {}
 
 
-void updateQuest(float dt) {}
+void updateQuest(GameContext* ctxPtr, float dt) {}
 
-void updatePlayerDefeated(float dt){
-    sprintf(bufferPtr, "ur dead nigga");
+void updatePlayerDefeated(GameContext* ctxPtr, float dt){
+    sprintf(ctxPtr->buffer, "ur dead nigga");
 }
 
 
 
-void updateGame(float dt) {
-    switch (*statePtr) {
+void updateGame(GameContext* ctxPtr, float dt) {
+    switch (ctxPtr->currentState) {
         case GAME_MAIN_MENU:
-            updateMainMenu(dt);
+            updateMainMenu(ctxPtr, dt);
             break;
 
         case GAME_FREE_ROAM:
-            updateFreeRoam(dt);
+            updateFreeRoam(ctxPtr, dt);
             break;
 
         case GAME_FIGHT:
-            updateFight(dt);
+            updateFight(ctxPtr, dt);
             break;
 
         case GAME_DIALOGUE:
-            updateDialogue(dt);
+            updateDialogue(ctxPtr, dt);
             break;
 
         case GAME_QUEST:
-            updateQuest(dt);
+            updateQuest(ctxPtr, dt);
             break;
         case GAME_PLAYER_DEFEATED:
-            updatePlayerDefeated(dt);
+            updatePlayerDefeated(ctxPtr, dt);
             break;
 
             

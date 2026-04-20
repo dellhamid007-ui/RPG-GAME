@@ -6,81 +6,99 @@
 #include "../components/items.h"
 #include "../components/enemy.h"
 #include "../../libs/raylib/include/raylib.h"
+#define RAYGUI_IMPLEMENTATION
+#include "../../libs/raylib/include/raygui.h"
 #include "../../libs/raylib/include/raymath.h"
 #include "../components/world.h"
 #include "../ui/hud.h"
 #include "../core/game.h"
 #include "../core/gameContext.h"
+#include "render.h"
 
 
-extern Player* playerPtr;
-extern Camera2D* cameraPtr;
-extern GameState* statePtr;
+extern GameContext* ctxPtr;
 
 
-void drawFreeRoam(float dt){
-    
+menuState defaultState = mainMenuOption;
+Font defaultFont;
+
+void initRender(){
+    defaultFont = GuiGetFont();
+    defaultFont.baseSize = 20;
+}
+
+void drawFreeRoam(GameContext* ctxPtr, float dt)
+{
     ClearBackground(BLACK);
-    BeginMode2D(*cameraPtr);
 
-        worldDraw();
-        playerDraw(playerPtr);            
+        ClearBackground(BLACK);
 
-    EndMode2D();
+        BeginMode2D(ctxPtr->camera);
+            worldDraw();
+            playerDraw(&(ctxPtr->player));
+        EndMode2D();
 
-    drawInventory(playerPtr);
+    drawHud(&(ctxPtr->player));
 }
 
 
-void drawMainMenu(float dt){
+
+void drawMainMenu(GameContext* ctxPtr, float dt){
+    if(defaultState = mainMenuOption){
+             ClearBackground(WHITE);
+            if(GuiButton((Rectangle){100,100, 100, 50}, "Start New Game")) defaultState = newGameOption;
+            if(GuiButton((Rectangle){960,200, 100, 50}, "Load Game")) defaultState = loadGameOption;
+            if(GuiButton((Rectangle){960,500,240,120}, "Exit")) defaultState = exitGameOption;
+    }
+
+}
+
+void drawFight(GameContext* ctxPtr, float dt){
+
+    ClearBackground(WHITE);
+
+    drawHud(&(ctxPtr->player));
+    drawEnemy((ctxPtr->activeEnemy));
+}
+
+
+void drawDialogue(GameContext* ctxPtr, float dt){
+    ClearBackground(WHITE);
+}
+
+void drawQuest(GameContext* ctxPtr, float dt){
+    ClearBackground(WHITE);
+}
+
+void drawPlayerDefeated(GameContext* ctxPtr, float dt){
         ClearBackground(WHITE);
 }
 
-void drawFight(float dt){
 
-    ClearBackground(WHITE);
-
-    drawInventory(playerPtr);
-}
-
-
-void drawDialogue(float dt){
-    ClearBackground(WHITE);
-}
-
-void drawQuest(float dt){
-    ClearBackground(WHITE);
-}
-
-void drawPlayerDefeated(float dt){
-        ClearBackground(WHITE);
-}
-
-
-void drawGame(float dt) {
+void drawGame(GameContext* ctxPtr, float dt) {
     BeginDrawing();
-        switch (*statePtr) {
+        switch (ctxPtr->currentState) {
             case GAME_MAIN_MENU:
-                drawMainMenu(dt);
+                drawMainMenu(ctxPtr, dt);
                 break;
 
             case GAME_FREE_ROAM:
-                drawFreeRoam(dt);
+                drawFreeRoam(ctxPtr, dt);
                 break;
 
             case GAME_FIGHT:
-                drawFight(dt);
+                drawFight(ctxPtr, dt);
                 break;
 
             case GAME_DIALOGUE:
-                drawDialogue(dt);
+                drawDialogue(ctxPtr, dt);
                 break;
 
             case GAME_QUEST:
-                drawQuest(dt);
+                drawQuest(ctxPtr, dt);
                 break;
             case GAME_PLAYER_DEFEATED:
-                drawPlayerDefeated(dt);
+                drawPlayerDefeated(ctxPtr, dt);
                 break;   
         }
     EndDrawing();

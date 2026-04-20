@@ -12,17 +12,45 @@ static TileType map[MAP_H][MAP_W];
 static Room rooms[64];
 static int roomCount =0;
 
-static Texture2D texWall;
+static Texture2D texWall[16];
 static Texture2D texFloor;
 
 
+static int getWallMask(int x, int y){
+    int mask =0;
+
+    if (y > 0 && map[y-1][x] == TILE_WALL) mask |= 1;  //north
+    if (x < MAP_W-1 && map[y][x+1] == TILE_WALL) mask |= 2;  //east
+    if (y < MAP_H-1 && map[y+1][x] == TILE_WALL) mask |= 4;  //south
+    if (x > 0 && map[y][x-1] == TILE_WALL) mask |= 8; //west
+
+    return mask;
+}
+
+
 void worldLoadTextures(void) {
-    texWall  = LoadTexture("assets/tiles/wall.png");
+    texWall[0]  = LoadTexture("assets/tiles/wall.png");        // NESW
+    texWall[1]  = LoadTexture("assets/tiles/wallSWE.png");
+    texWall[2]  = LoadTexture("assets/tiles/wallNWS.png");
+    texWall[3]  = LoadTexture("assets/tiles/wallNWS.png");
+    texWall[4]  = LoadTexture("assets/tiles/wallNWE.png");
+    texWall[5]  = LoadTexture("assets/tiles/wallNWE.png");
+    texWall[6]  = LoadTexture("assets/tiles/wallNW.png");
+    texWall[7]  = LoadTexture("assets/tiles/wallNW.png");
+    texWall[8]  = LoadTexture("assets/tiles/wallNES.png");
+    texWall[9]  = LoadTexture("assets/tiles/wallNES.png");
+    texWall[10] = LoadTexture("assets/tiles/wallNS.png");
+    texWall[11] = LoadTexture("assets/tiles/wallNS.png");
+    texWall[12] = LoadTexture("assets/tiles/wallNE.png");
+    texWall[13] = LoadTexture("assets/tiles/wallNE.png");
+    texWall[14] = LoadTexture("assets/tiles/wallN.png");
+    texWall[15] = LoadTexture("assets/tiles/wallN.png");
+    
     texFloor = LoadTexture("assets/tiles/floor.png");
 }
 
 void worldUnloadTextures(void) {
-    UnloadTexture(texWall);
+    UnloadTexture(*texWall);
     UnloadTexture(texFloor);
 }
 
@@ -32,6 +60,8 @@ TileType getTile(int x, int y){
 }
 
 void worldInit(void) {
+    
+
     for (int y = 0; y < MAP_H; y++)
         for (int x = 0; x < MAP_W; x++)
             map[y][x] = TILE_WALL;
@@ -55,13 +85,20 @@ int worldCanMove(Rectangle nextPos)
     }
     return 1;
 }
+
+
+
 void worldDraw(void)
 {
     for (int y = 0; y < MAP_H; y++) {
+        
         for (int x = 0; x < MAP_W; x++) {
             Rectangle tileRect = { x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE };
-            if (map[y][x] == TILE_WALL)
-                DrawTexture(texWall, x* TILE_SIZE, y* TILE_SIZE, WHITE);
+            
+            if (map[y][x] == TILE_WALL){
+                int mask = getWallMask(x,y);
+                DrawTexture(texWall[mask], x* TILE_SIZE, y* TILE_SIZE, WHITE);
+            }
             else
                 DrawTexture(texFloor, x* TILE_SIZE, y* TILE_SIZE, WHITE);
         }
@@ -120,7 +157,7 @@ void worldGenerate(void){
 
 int worldSave(void) {
 
-    FILE* f = fopen("\\Data\\map.dat", "wb");
+    FILE* f = fopen("Data/map.dat", "wb");
     if (!f) return 0;
     fwrite(map, sizeof(TileType), MAP_W*MAP_H, f);
     fclose(f);
@@ -129,7 +166,7 @@ int worldSave(void) {
 
 void worldLoad(void) {
 
-    FILE* f = fopen("\\Data\\map.dat", "rb");
+    FILE* f = fopen("Data/map.dat", "rb");
     if (!f) return;
     fread(map, sizeof(TileType), MAP_W*MAP_H, f);
     fclose(f);

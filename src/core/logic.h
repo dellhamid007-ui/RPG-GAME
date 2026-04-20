@@ -1,7 +1,10 @@
 #ifndef LOGIC_H
 #define LOGIC_H
 
-void updateGame(float dt);
+
+typedef struct GameContext GameContext;
+
+void updateGame(GameContext* ctxPtr,float dt);
 
 
 #endif

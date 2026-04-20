@@ -13,7 +13,7 @@ typedef struct ItemIcons {
 } ItemIcons;
 
 
-void drawInventory(Player *player);
+void drawHud(Player* player);
 static void loadIcons();
 void hudInit();
 

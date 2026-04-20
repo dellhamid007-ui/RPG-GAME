@@ -29,6 +29,8 @@ void enemyAttack(Player* player, Enemy* enemy);
 void destroyEnemy(Enemy** enemy);
 
 
+void drawEnemy(Enemy* enemy);
+
 
 
 

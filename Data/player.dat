@@ -1,0 +1,12 @@
+name: midou
+pos x: 1440.000000
+pos y: 2086.000000
+health: 200
+level: 1
+Magic: 0
+cooldown: 3
+shield: 0
+inventory_count: 1
+selected item: 0
+inventory:
+slot 0 {type: 0, rarity: 4, value: 40}

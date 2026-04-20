@@ -1,8 +1,18 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+typedef struct GameContext GameContext;
 
-void drawGame(float dt);
+typedef enum{
+    newGameOption,
+    loadGameOption,
+    aboutMenuOption,
+    exitGameOption,
+    mainMenuOption
+}menuState;
+
+void initRender();
+void drawGame(GameContext* ctxPtr, float dt);
 
 
 

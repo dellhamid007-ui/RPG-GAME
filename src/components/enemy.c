@@ -16,19 +16,17 @@ static void loadEnemyAssets(){
 }
 
 Enemy* createEnemy(enemyClass eClass, int level){
-
-    loadEnemyAssets();
-
+    
     Enemy* ePtr = malloc(sizeof(*ePtr));
 
     ePtr->eClass = eClass;
     ePtr->level = level;
     switch(level){
-        case 1: ePtr->health = 0.5 *ENEMY_MAX_HEALTH; ePtr->defense = 10; ePtr->damage = 5;
-        case 2: ePtr->health = 0.6 *ENEMY_MAX_HEALTH; ePtr->defense = 15; ePtr->damage = 6;
-        case 3: ePtr->health = 0.7 *ENEMY_MAX_HEALTH; ePtr->defense = 20; ePtr->damage = 7;
-        case 4: ePtr->health = 0.8 *ENEMY_MAX_HEALTH; ePtr->defense = 25; ePtr->damage = 8;
-        case 5: ePtr->health = 0.9 *ENEMY_MAX_HEALTH; ePtr->defense = 30; ePtr->damage = 9;
+        case 1: ePtr->health = 0.5 *ENEMY_MAX_HEALTH; ePtr->defense = 10; ePtr->damage = 5; break;
+        case 2: ePtr->health = 0.6 *ENEMY_MAX_HEALTH; ePtr->defense = 15; ePtr->damage = 6; break;
+        case 3: ePtr->health = 0.7 *ENEMY_MAX_HEALTH; ePtr->defense = 20; ePtr->damage = 7; break;
+        case 4: ePtr->health = 0.8 *ENEMY_MAX_HEALTH; ePtr->defense = 25; ePtr->damage = 8; break;
+        case 5: ePtr->health = 0.9 *ENEMY_MAX_HEALTH; ePtr->defense = 30; ePtr->damage = 9; break;
     }
     return ePtr;
 }

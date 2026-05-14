@@ -31,7 +31,7 @@ Player* loadGame(){
 
 void initRandomEncounter(GameContext* ctxPtr) {
     enemyClass type = GetRandomValue(Zombie, Spider);
-    int level = ctxPtr->player.level;
+    int level = ctxPtr->player->level;
 
     ctxPtr->activeEnemy = createEnemy(type, level);
 
@@ -43,15 +43,15 @@ void initRandomEncounter(GameContext* ctxPtr) {
 }
 
 void updateFreeRoam(GameContext* ctxPtr, float dt) {
-    Vector2 oldPos = ctxPtr->player.pos;
+    Vector2 oldPos = ctxPtr->player->pos;
 
-    movePlayer(&(ctxPtr->player));
+    movePlayer(ctxPtr->player);
 
-    sprintf(ctxPtr->buffer, "x = %.2f, y = %.2f", ctxPtr->player.pos.x, ctxPtr->player.pos.y);
+    sprintf(ctxPtr->buffer, "x = %.2f, y = %.2f", ctxPtr->player->pos.x, ctxPtr->player->pos.y);
 
-    ctxPtr->camera.target = ctxPtr->player.pos;
+    ctxPtr->camera.target = ctxPtr->player->pos;
 
-    float moved = Vector2Distance(oldPos, ctxPtr->player.pos);
+    float moved = Vector2Distance(oldPos, ctxPtr->player->pos);
     ctxPtr->encounterDistance += moved;
 
     if (ctxPtr->encounterDistance >= ctxPtr->encounterThreshold) {
@@ -60,15 +60,15 @@ void updateFreeRoam(GameContext* ctxPtr, float dt) {
     }
 
 
-    playerSelectItem(&(ctxPtr->player));
+    playerSelectItem(ctxPtr->player);
 
     if(IsKeyPressed(KEY_P)){
-        saveGame(&(ctxPtr->player));
+        saveGame(ctxPtr->player);
     }
     if(IsKeyPressed(KEY_L)){
         Player *p =loadGame();
-        ctxPtr->player = *p;
-        free(p);
+        ctxPtr->player = p;
+        p = NULL;
     }
     if(IsKeyPressed(KEY_ESCAPE)){
         ctxPtr->currentState = GAME_MAIN_MENU;
@@ -77,48 +77,48 @@ void updateFreeRoam(GameContext* ctxPtr, float dt) {
 
 
     if(IsKeyPressed(KEY_K)){
-        playerDropItem(&(ctxPtr->player));
+        playerDropItem(ctxPtr->player);
     }
 
 }
 
 void updateMainMenu(GameContext* ctxPtr, float dt) {
-    switch(defaultState){
+    switch(defaultState){    
         case newGameOption: ctxPtr->currentState = GAME_FREE_ROAM; break;
-        case loadGameOption: ctxPtr->currentState = GAME_FREE_ROAM; ctxPtr->player = *loadGame(); break;
+        case loadGameOption: ctxPtr->currentState = GAME_FREE_ROAM; ctxPtr->player = loadGame(); break;
         case exitGameOption: cleanupGame();
     }
 }
 
 
 void updateFight(GameContext* ctxPtr, float dt) {
-    sprintf(ctxPtr->buffer, "player: %d\n enemy %d", ctxPtr->player.health, ctxPtr->activeEnemy->health);
+    sprintf(ctxPtr->buffer, "player: %d\n enemy %d", ctxPtr->player->health, ctxPtr->activeEnemy->health);
 
-    playerSelectItem(&(ctxPtr->player));
+    playerSelectItem(ctxPtr->player);
 
     if(IsKeyPressed(KEY_K)){
-        playerDropItem(&(ctxPtr->player));
+        playerDropItem(ctxPtr->player);
     }
 
 
     if(ctxPtr->battle.turn == TURN_PLAYER){
         if(IsKeyPressed(KEY_F)){
-            if(playerUseItem(&(ctxPtr->player), ctxPtr->activeEnemy) == 1){
+            if(playerUseItem(ctxPtr->player, ctxPtr->activeEnemy) == 1){
                 ctxPtr->battle.turn = TURN_ENEMY;
-                ctxPtr->player.cooldown--;
+                ctxPtr->player->cooldown--;
 
                 if (ctxPtr->activeEnemy->health <= 0){ 
                     ctxPtr->activeEnemy->health = 0;
                     printf("enemy defeated\n");
                     destroyEnemy(&(ctxPtr->activeEnemy));
-                    playerGainItem(&(ctxPtr->player));
+                    playerGainItem(ctxPtr->player);
                     ctxPtr->battle.turn = TURN_END;
                 }
 
             }
         }
         if(IsKeyPressed(KEY_G)){
-            playerMagic(&(ctxPtr->player), ctxPtr->activeEnemy);
+            playerMagic(ctxPtr->player, ctxPtr->activeEnemy);
         }
     }
 
@@ -132,9 +132,9 @@ void updateFight(GameContext* ctxPtr, float dt) {
         
         if(ctxPtr->battle.enemyDelay >= 0.5f){
             
-            enemyAttack(&(ctxPtr->player), ctxPtr->activeEnemy);
+            enemyAttack(ctxPtr->player, ctxPtr->activeEnemy);
 
-            if(ctxPtr->player.health <= 0){
+            if(ctxPtr->player->health <= 0){
                 ctxPtr->currentState = GAME_PLAYER_DEFEATED;
             }
             else{
@@ -163,6 +163,7 @@ void updateDialogue(GameContext* ctxPtr, float dt) {}
 void updateQuest(GameContext* ctxPtr, float dt) {}
 
 void updatePlayerDefeated(GameContext* ctxPtr, float dt){
+    destroyPlayer(ctxPtr->player);
     sprintf(ctxPtr->buffer, "ur dead nigga");
 }
 

@@ -56,7 +56,6 @@ Player* loadPlayer(){
 
     FILE* playerFile = fopen("Data/player.dat", "r");
     
-    
     if (playerFile == NULL) {
         printf("Error: Could not open file for reading\n");
         free(player);
@@ -118,7 +117,7 @@ Player* loadPlayer(){
             item->rarity = rarity;
             item->value = value;
 
-            player->inventory[slot] = item;
+            if(slot>= 0 && slot < MAX_INVENTORY) player->inventory[slot] = item;
         }
 
     printf("x = %.2f , y = %.2f", player->pos.x, player->pos.y);        
@@ -226,16 +225,17 @@ void movePlayer(Player* player)
     Vector2 nextPos = player->pos;
     float dx = 0, dy = 0;
 
+    if (IsKeyDown(KEY_D)) dx += MOVMENT_SPEED;
+    if (IsKeyDown(KEY_A)) dx -= MOVMENT_SPEED;
+    if (IsKeyDown(KEY_W)) dy -= MOVMENT_SPEED;
+    if (IsKeyDown(KEY_S)) dy += MOVMENT_SPEED;
+
+    
     if (dx != 0 && dy != 0) {
         float factor = 1.0f / sqrtf(2);
         dx *= factor;
         dy *= factor;
     }
-
-    if (IsKeyDown(KEY_D)) dx += MOVMENT_SPEED;
-    if (IsKeyDown(KEY_A)) dx -= MOVMENT_SPEED;
-    if (IsKeyDown(KEY_W)) dy -= MOVMENT_SPEED;
-    if (IsKeyDown(KEY_S)) dy += MOVMENT_SPEED;
 
     // Slide along X
     Rectangle hitboxX = { nextPos.x + dx, nextPos.y, PLAYER_WIDTH, PLAYER_HEIGHT };
@@ -379,8 +379,8 @@ void playerGainItem(Player* player){
     for(int i =0; i< MAX_INVENTORY; i++){
         if(player->inventory[i] == NULL){
 
-            Rarity r = biasedRarity();
-            itemType it = biasedType();
+            Rarity r = (Rarity)biasedRarity();
+            itemType it = (itemType)biasedType();
             player->inventory[i] = createItem(it, r);
             player->inventory_count ++;
             
@@ -448,3 +448,9 @@ static Texture2D createLightTexture(int radius){
 void playerDraw(const Player* p) {
     DrawRectangle(p->pos.x, p->pos.y, PLAYER_WIDTH, PLAYER_HEIGHT, BLUE);
 }
+
+
+void destroyPlayer(Player* p){
+
+    free(p);
+} // make sure p is then set to NULL

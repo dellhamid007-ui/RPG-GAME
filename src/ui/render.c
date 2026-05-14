@@ -35,16 +35,16 @@ void drawFreeRoam(GameContext* ctxPtr, float dt)
 
         BeginMode2D(ctxPtr->camera);
             worldDraw();
-            playerDraw(&(ctxPtr->player));
+            playerDraw(ctxPtr->player);
         EndMode2D();
 
-    drawHud(&(ctxPtr->player));
+    drawHud(ctxPtr->player);
 }
 
 
 
 void drawMainMenu(GameContext* ctxPtr, float dt){
-    if(defaultState = mainMenuOption){
+    if(defaultState == mainMenuOption){
              ClearBackground(WHITE);
             if(GuiButton((Rectangle){100,100, 100, 50}, "Start New Game")) defaultState = newGameOption;
             if(GuiButton((Rectangle){960,200, 100, 50}, "Load Game")) defaultState = loadGameOption;
@@ -57,7 +57,7 @@ void drawFight(GameContext* ctxPtr, float dt){
 
     ClearBackground(WHITE);
 
-    drawHud(&(ctxPtr->player));
+    drawHud(ctxPtr->player);
     drawEnemy((ctxPtr->activeEnemy));
 }
 

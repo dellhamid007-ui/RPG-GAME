@@ -50,7 +50,7 @@ void worldLoadTextures(void) {
 }
 
 void worldUnloadTextures(void) {
-    UnloadTexture(*texWall);
+    for(int i =0; i<16; i++) UnloadTexture(*(texWall + 1));
     UnloadTexture(texFloor);
 }
 

@@ -12,18 +12,16 @@
 #include "../core/gameContext.h"
 
 
-static GameContext gameCtx;
-GameContext* ctxPtr = &gameCtx;
+static GameContext *ctxPtr;
+
 
 
 void initGame(void) {
     SetTargetFPS(30);
     InitWindow(1920, 1080, "My RPG");
 
-    gameCtx.camera.target = gameCtx.player.pos;
-    gameCtx.camera.offset = (Vector2){960, 540};
-    gameCtx.camera.rotation = 0.0f;
-    gameCtx.camera.zoom = 2.5f;
+    ctxPtr = malloc(sizeof(GameContext));
+
  
  //   camera.target = player.pos;
  //   camera.offset = (Vector2){960, 540}; 
@@ -34,18 +32,26 @@ void initGame(void) {
     hudInit();
     playerInit();
 
+    ctxPtr->camera.target = ctxPtr->player->pos;
+    ctxPtr->camera.offset = (Vector2){960, 540};
+    ctxPtr->camera.rotation = 0.0f;
+    ctxPtr->camera.zoom = 2.5f;
+
     worldGenerate();
 
     Player* p = createPlayer("midou", Fire);
-    gameCtx.player = *p;
-    free(p);
+    ctxPtr->player = p;
 
-    gameCtx.currentState = GAME_MAIN_MENU;
-    gameCtx.activeEnemy = NULL;
+    p = NULL;
+
+    ctxPtr->currentState = GAME_MAIN_MENU;
+    ctxPtr->activeEnemy = NULL;
     
-    gameCtx.encounterThreshold = 20000.0f;
-    gameCtx.encounterDistance = 0.0f;
+    ctxPtr->encounterThreshold = 20000.0f;
+    ctxPtr->encounterDistance = 0.0f;
 
+
+    loadEnemyAssets();
 
     
 }
@@ -53,18 +59,18 @@ void initGame(void) {
 void drawDarkness(void)
 {
     Vector2 center = {
-        gameCtx.player.pos.x - gameCtx.camera.target.x + GetScreenWidth() / 2,
-        gameCtx.player.pos.y - gameCtx.camera.target.y + GetScreenHeight() / 2
+        ctxPtr->player->pos.x - ctxPtr->camera.target.x + GetScreenWidth() / 2,
+        ctxPtr->player->pos.y - ctxPtr->camera.target.y + GetScreenHeight() / 2
     };
 
-    BeginTextureMode(gameCtx.darknessRT);
+    BeginTextureMode(ctxPtr->darknessRT);
         ClearBackground((Color){ 0, 0, 0, 220 });
 
         BeginBlendMode(BLEND_ALPHA);
             DrawCircle(
                 center.x + PLAYER_WIDTH / 2,
                 center.y + PLAYER_HEIGHT / 2,
-                gameCtx.torchRadius,
+                ctxPtr->torchRadius,
                 (Color){ 255, 255, 255, 50 }
             );
         EndBlendMode();
@@ -81,7 +87,7 @@ void gameLoop(void) {
 
     drawGame(ctxPtr, dt);
     
-    DrawText(gameCtx.buffer, 100, 100, 20, BLACK);
+    DrawText(ctxPtr->buffer, 100, 100, 20, BLACK);
     
     }
 }
@@ -90,5 +96,5 @@ void cleanupGame(void) {
     CloseWindow();
     worldUnload();
     playerUnload();
-    UnloadRenderTexture(gameCtx.darknessRT);
+    UnloadRenderTexture(ctxPtr->darknessRT);
 }

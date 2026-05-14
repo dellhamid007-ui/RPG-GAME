@@ -23,6 +23,7 @@ int calcValue(Item item){
             case Rare: return 30; break;
             case Mythical: return 35; break;
             case Legendary: return 40; break;
+            default: return 0;
         } break;
         case Potion: switch(item.rarity){
             case Common: return 30; break;
@@ -30,8 +31,10 @@ int calcValue(Item item){
             case Rare: return 50; break;
             case Mythical: return 60; break;
             case Legendary: return 70; break;
+            default: return 0;
         }break;
         case Shield: return 1;
+        default: return 0;
     }
 }
 

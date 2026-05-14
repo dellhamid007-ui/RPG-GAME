@@ -31,7 +31,7 @@ typedef enum{
 
 
 typedef struct GameContext {
-    Player player;
+    Player* player;
     Camera2D camera;
     GameState currentState;
 

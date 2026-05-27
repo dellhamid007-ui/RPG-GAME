@@ -205,6 +205,9 @@ Player* createPlayer(char* name, Magic magic){
         p->inventory[i] = NULL;
     }
 
+    p->pos.x = rand () % MAP_H * TILE_SIZE + 1;
+    p->pos.y = rand () % MAP_W * TILE_SIZE + 1;
+
 
     return p;
 }

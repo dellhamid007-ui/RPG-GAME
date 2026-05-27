@@ -27,7 +27,7 @@ typedef struct Enemy{
 Enemy* createEnemy(enemyClass eClass, int level);
 void enemyAttack(Player* player, Enemy* enemy);
 void destroyEnemy(Enemy** enemy);
-
+void loadEnemyAssets();
 
 void drawEnemy(Enemy* enemy);
 

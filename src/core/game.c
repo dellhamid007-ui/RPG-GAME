@@ -12,13 +12,26 @@
 #include "../core/gameContext.h"
 
 
-static GameContext *ctxPtr;
-
+GameContext *ctxPtr;
+int windowWidth;
+int windowHeight;
 
 
 void initGame(void) {
     SetTargetFPS(30);
-    InitWindow(1920, 1080, "My RPG");
+    int monitor = GetCurrentMonitor();
+    
+    int screenWidth = GetMonitorWidth(monitor);
+    int screenHeight = GetMonitorHeight(monitor);
+
+    windowWidth = screenWidth * 0.8;
+    windowHeight = screenHeight * 0.8;
+
+    InitWindow(windowWidth, windowHeight, "My Game");
+
+    SetWindowPosition((screenWidth - windowWidth) / 2, (screenHeight - windowHeight) / 2);
+
+    ToggleFullscreen();
 
     ctxPtr = malloc(sizeof(GameContext));
 
@@ -32,22 +45,11 @@ void initGame(void) {
     hudInit();
     playerInit();
 
-    ctxPtr->camera.target = ctxPtr->player->pos;
-    ctxPtr->camera.offset = (Vector2){960, 540};
-    ctxPtr->camera.rotation = 0.0f;
-    ctxPtr->camera.zoom = 2.5f;
-
-    worldGenerate();
-
-    Player* p = createPlayer("midou", Fire);
-    ctxPtr->player = p;
-
-    p = NULL;
 
     ctxPtr->currentState = GAME_MAIN_MENU;
     ctxPtr->activeEnemy = NULL;
     
-    ctxPtr->encounterThreshold = 20000.0f;
+    ctxPtr->encounterThreshold = 200.0f;
     ctxPtr->encounterDistance = 0.0f;
 
 

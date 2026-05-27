@@ -7,13 +7,16 @@
 #include "enemy.h"
 #include "../../libs/raylib/include/raylib.h"
 #include "world.h"
+#include "../core/gameContext.h"
 
 static TileType map[MAP_H][MAP_W];
 static Room rooms[64];
 static int roomCount =0;
 
-static Texture2D texWall[16];
+Texture2D texWall[16];
 static Texture2D texFloor;
+
+extern GameContext *ctxPtr;
 
 
 static int getWallMask(int x, int y){
@@ -29,24 +32,28 @@ static int getWallMask(int x, int y){
 
 
 void worldLoadTextures(void) {
-    texWall[0]  = LoadTexture("assets/tiles/wall.png");        // NESW
-    texWall[1]  = LoadTexture("assets/tiles/wallSWE.png");
-    texWall[2]  = LoadTexture("assets/tiles/wallNWS.png");
-    texWall[3]  = LoadTexture("assets/tiles/wallNWS.png");
-    texWall[4]  = LoadTexture("assets/tiles/wallNWE.png");
-    texWall[5]  = LoadTexture("assets/tiles/wallNWE.png");
-    texWall[6]  = LoadTexture("assets/tiles/wallNW.png");
-    texWall[7]  = LoadTexture("assets/tiles/wallNW.png");
-    texWall[8]  = LoadTexture("assets/tiles/wallNES.png");
-    texWall[9]  = LoadTexture("assets/tiles/wallNES.png");
-    texWall[10] = LoadTexture("assets/tiles/wallNS.png");
-    texWall[11] = LoadTexture("assets/tiles/wallNS.png");
-    texWall[12] = LoadTexture("assets/tiles/wallNE.png");
-    texWall[13] = LoadTexture("assets/tiles/wallNE.png");
-    texWall[14] = LoadTexture("assets/tiles/wallN.png");
-    texWall[15] = LoadTexture("assets/tiles/wallN.png");
+    texWall[0]  = LoadTexture("assets/tiles/Wall.png");        // NESW
+    texWall[1]  = LoadTexture("assets/tiles/WallSWE.png");
+    texWall[2]  = LoadTexture("assets/tiles/WallNWS.png");
+    texWall[3]  = LoadTexture("assets/tiles/WallNWS.png");
+    texWall[4]  = LoadTexture("assets/tiles/WallNWE.png");
+    texWall[5]  = LoadTexture("assets/tiles/WallNWE.png");
+    texWall[6]  = LoadTexture("assets/tiles/WallNW.png");
+    texWall[7]  = LoadTexture("assets/tiles/WallNW.png");
+    texWall[8]  = LoadTexture("assets/tiles/WallNES.png");
+    texWall[9]  = LoadTexture("assets/tiles/WallNES.png");
+    texWall[10] = LoadTexture("assets/tiles/WallNS.png");
+    texWall[11] = LoadTexture("assets/tiles/WallNS.png");
+    texWall[12] = LoadTexture("assets/tiles/WallNE.png");
+    texWall[13] = LoadTexture("assets/tiles/WallNE.png");
+    texWall[14] = LoadTexture("assets/tiles/WallN.png");
+    texWall[15] = LoadTexture("assets/tiles/WallN.png");
     
     texFloor = LoadTexture("assets/tiles/floor.png");
+
+
+
+
 }
 
 void worldUnloadTextures(void) {
@@ -152,6 +159,11 @@ void worldGenerate(void){
                 for (int y = (y1<y2?y1:y2); y <= (y1>y2?y1:y2); y++)
                     map[y][x2] = TILE_FLOOR;
             }
+
+    while(map[(int)(ctxPtr->player->pos.y / TILE_SIZE)][(int)(ctxPtr->player->pos.x / TILE_SIZE)] != TILE_FLOOR){ //make sure player isn't clipping through walls when spawning
+        ctxPtr->player->pos.x = rand () % MAP_H * TILE_SIZE + 1;
+        ctxPtr->player->pos.y = rand () % MAP_W * TILE_SIZE + 1;
+    }
 }
 
 

@@ -10,7 +10,7 @@ static Texture2D enemyHealthColumn;
 static Texture2D enemyHealthFrame;
 
 
-static void loadEnemyAssets(){
+void loadEnemyAssets(){
     enemyHealthColumn = LoadTexture("assets/hud/enemyHealthColumn.png");
     enemyHealthFrame = LoadTexture("assets/hud/enemyHealthFrame.png");
 }

@@ -82,11 +82,20 @@ void updateFreeRoam(GameContext* ctxPtr, float dt) {
 
 }
 
+void loadFreeRoam(){
+    ctxPtr->camera.target = ctxPtr->player->pos;
+    ctxPtr->camera.offset = (Vector2){GetScreenWidth() /2.0f,GetScreenHeight() /2.0f };
+    ctxPtr->camera.rotation = 0.0f;
+    ctxPtr->camera.zoom = 2.5f;
+
+    worldGenerate();
+}
+
 void updateMainMenu(GameContext* ctxPtr, float dt) {
     switch(defaultState){    
-        case newGameOption: ctxPtr->currentState = GAME_FREE_ROAM; break;
-        case loadGameOption: ctxPtr->currentState = GAME_FREE_ROAM; ctxPtr->player = loadGame(); break;
-        case exitGameOption: cleanupGame();
+        case newGameOption:  ctxPtr->player=createPlayer("Midou", Fire); loadFreeRoam(); ctxPtr->currentState = GAME_FREE_ROAM; break;
+        case loadGameOption: ctxPtr->player = loadGame(); loadFreeRoam(); ctxPtr->currentState = GAME_FREE_ROAM;  break;
+        case exitGameOption: cleanupGame(); break;
     }
 }
 

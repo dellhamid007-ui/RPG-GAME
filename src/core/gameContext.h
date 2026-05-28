@@ -21,6 +21,7 @@ typedef struct {
 
 typedef enum{
     GAME_MAIN_MENU,
+    GAME_CONTROLS_SCREEN,
     GAME_FREE_ROAM,
     GAME_FIGHT,
     GAME_QUEST,

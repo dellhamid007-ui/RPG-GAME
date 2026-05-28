@@ -91,11 +91,18 @@ void loadFreeRoam(){
     worldGenerate();
 }
 
+
 void updateMainMenu(GameContext* ctxPtr, float dt) {
     switch(defaultState){    
-        case newGameOption:  ctxPtr->player=createPlayer("Midou", Fire); loadFreeRoam(); ctxPtr->currentState = GAME_FREE_ROAM; break;
-        case loadGameOption: ctxPtr->player = loadGame(); loadFreeRoam(); ctxPtr->currentState = GAME_FREE_ROAM;  break;
+        case newGameOption:  ctxPtr->player=createPlayer("Midou", Fire); loadFreeRoam(); ctxPtr->currentState = GAME_CONTROLS_SCREEN; break;
+        case loadGameOption: ctxPtr->player = loadGame(); loadFreeRoam(); ctxPtr->currentState = GAME_CONTROLS_SCREEN;  break;
         case exitGameOption: cleanupGame(); break;
+    }
+}
+
+void updateControlsScreen(GameContext* ctxPtr,float dt){
+    if(IsKeyPressed(KEY_ENTER)){
+        ctxPtr->currentState = GAME_FREE_ROAM;
     }
 }
 
@@ -182,6 +189,10 @@ void updateGame(GameContext* ctxPtr, float dt) {
     switch (ctxPtr->currentState) {
         case GAME_MAIN_MENU:
             updateMainMenu(ctxPtr, dt);
+            break;
+
+        case GAME_CONTROLS_SCREEN:
+            updateControlsScreen(ctxPtr, dt);
             break;
 
         case GAME_FREE_ROAM:

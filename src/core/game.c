@@ -12,7 +12,7 @@
 #include "../core/gameContext.h"
 
 
-GameContext *ctxPtr;
+GameContext *ctxPtr = NULL;
 int windowWidth;
 int windowHeight;
 
@@ -29,11 +29,12 @@ void initGame(void) {
 
     InitWindow(windowWidth, windowHeight, "My Game");
 
+
     SetWindowPosition((screenWidth - windowWidth) / 2, (screenHeight - windowHeight) / 2);
 
     ToggleFullscreen();
 
-    ctxPtr = malloc(sizeof(GameContext));
+    ctxPtr = calloc(1, sizeof(GameContext));
 
  
  //   camera.target = player.pos;

@@ -1,26 +1,17 @@
-CC = x86_64-w64-mingw32-gcc
+CC     = gcc
+CFLAGS = -Wextra -Wall -O2 -Iinclude -Wno-unused-parameter  -Wno-unused-function -Wno-unused-variable
+LIBS   = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+TARGET = app
 
-CFLAGS = -Wall -Wextra -g \
-         -Isrc \
-         -Ilibs/raylib/include
-
-LDFLAGS = -Llibs/raylib/lib
-LDLIBS  = -lraylib -lopengl32 -lgdi32 -lwinmm
-
-SRC = $(wildcard src/*.c) \
-      $(wildcard src/components/*.c) \
-      $(wildcard src/core/*.c) \
-      $(wildcard src/systems/*.c) \
-      $(wildcard src/ui/*.c) \
-      $(wildcard src/misc/*.c)
-
-TARGET = bin/game.exe
+# FIX: Use 'find' to robustly gather all .c files inside 'src' and its subdirectories
+SRC    = $(shell find src -name "*.c")
 
 all: $(TARGET)
 
 $(TARGET): $(SRC)
-	@mkdir -p bin
-	$(CC) $(CFLAGS) $(SRC) $(LDFLAGS) $(LDLIBS) -o $(TARGET)
+	$(CC) $(CFLAGS) $(SRC) $(LIBS) -o $(TARGET)
 
 clean:
 	rm -f $(TARGET)
+
+.PHONY: all clean

@@ -16,24 +16,43 @@
 #include "render.h"
 
 
+#define MAX_PARTICLES 1000
+
 extern GameContext* ctxPtr;
 
 
 menuState defaultState = mainMenuOption;
 
+CircularBuffer circularBuffer;
 
-Font regularFont = {0}; 
+
+Font regularFont = {0};
+
+void emitParticle(CircularBuffer *circularBuffer, Vector2 emitterPosition, particleType type);
+Particle *addToCircularBuffer(CircularBuffer *circularBuffer);
+void updateParticles(CircularBuffer *circularBuffer, int screenWidth, int screenHeight);
+void updateCircularBuffer(CircularBuffer *circularBuffer);
+void drawParticles(CircularBuffer *circularBuffer);
 
 
 void initRender(){
-    regularFont = LoadFontEx("/home/midou/Projects/RPG-GAME/assets/fonts/cinzel.ttf", 96, NULL, 0);
-    GenImageFontAtlas(&regularFont, 1);
+    regularFont = LoadFontEx("/home/midou/Projects/RPG-GAME/assets/fonts/cinzel.ttf", 70, NULL, 0);
+
     SetTextureFilter(regularFont.texture, TEXTURE_FILTER_BILINEAR);
 
-    //GenTextureMipmaps(&regularFont.texture);
-    //SetTextureFilter(regularFont.texture, TEXTURE_FILTER_BILINEAR);
+    GenTextureMipmaps(&regularFont.texture);
+    SetTextureFilter(regularFont.texture, TEXTURE_FILTER_TRILINEAR);
 
     if(regularFont.glyphCount == 0) printf("Failed to load font\n");
+
+    Particle *particles = (Particle*)RL_CALLOC(MAX_PARTICLES, sizeof(Particle)); // Particle array
+
+    circularBuffer.head =0;
+    circularBuffer.tail = 0;
+    circularBuffer.buffer = particles;
+
+
+    int emissionRate = -2;         
 }
 
 void drawControlsCorner(GameContext* ctxPtr, float dt){
@@ -79,6 +98,9 @@ void drawControlsCorner(GameContext* ctxPtr, float dt){
 
 void drawFreeRoam(GameContext* ctxPtr, float dt)
 {
+    emitParticle(&circularBuffer, ctxPtr->player->pos, PARTICLE_FLASH);
+
+
     ClearBackground(BLACK);
 
         ClearBackground(BLACK);
@@ -86,6 +108,8 @@ void drawFreeRoam(GameContext* ctxPtr, float dt)
         BeginMode2D(ctxPtr->camera);
             worldDraw();
             playerDraw(ctxPtr->player);
+            drawParticles(&circularBuffer);
+
         EndMode2D();
 
     drawHud(ctxPtr->player);
@@ -160,6 +184,7 @@ void drawControlsScreen(GameContext* ctxPtr, float dt){
         "Save: P",
         "Load: L",
         "Pause / Menu: ESC",
+        "Start Game: Enter",
         "Exit: Close Window / Alt+F4"
     };
     int n = sizeof(lines) / sizeof(lines[0]);
@@ -199,8 +224,111 @@ void drawPlayerDefeated(GameContext* ctxPtr, float dt){
         ClearBackground(WHITE);
 }
 
+void emitParticle(CircularBuffer* circularBuffer, Vector2 emitterPosition, particleType type){
+    Particle* new = addToCircularBuffer(circularBuffer);
+
+    if(new != NULL){
+        new->pos = emitterPosition;
+        new->alive = true;
+        new->lifeTime = 0.0f;
+        new->type = type;
+        float speed = (float)(rand()%10)/5.0f;
+        switch(type){
+            case PARTICLE_BLOOD: new->radius = 5.0f; new->color = RED; break;
+            case PARTICLE_MAGIC: new->radius = 5.0f; new->color = MAGENTA; break;
+            case PARTICLE_FLASH: new->radius = 5.0f; new->color = WHITE; break;
+            default: break;
+        }
+
+        float dir = (float)(rand()%360);
+
+        new->velocity = (Vector2){ speed*cosf(dir*DEG2RAD), speed*sinf(dir*DEG2RAD)};
+    }
+}
+
+Particle* addToCircularBuffer(CircularBuffer* circularBuffer){
+    Particle *new = NULL;
+
+    if (((circularBuffer->head + 1)%MAX_PARTICLES) != circularBuffer->tail){
+        new = &circularBuffer->buffer[circularBuffer->head];
+        circularBuffer->head = (circularBuffer->head + 1)%MAX_PARTICLES;
+    }
+
+    return new;
+}
+
+void updateParticles(CircularBuffer *circularBuffer, int screenWidth, int screenHeight){
+    for(int i = circularBuffer->tail; i != circularBuffer->head; i = (i+1) % MAX_PARTICLES){
+        circularBuffer->buffer[i].lifeTime += 1.0f/30.0f;
+
+        switch(circularBuffer->buffer[i].type){
+            case PARTICLE_BLOOD:
+            {
+                circularBuffer->buffer[i].pos.x += circularBuffer->buffer[i].velocity.x;
+                circularBuffer->buffer[i].velocity.y += 0.2f;
+                circularBuffer->buffer[i].pos.y += circularBuffer->buffer[i].velocity.y;
+            }break;
+            case PARTICLE_MAGIC:
+            {
+                circularBuffer->buffer[i].pos.x += circularBuffer->buffer[i].velocity.x + cosf(circularBuffer->buffer[i].lifeTime*215.0f);
+                circularBuffer->buffer[i].velocity.y -= 0.05f;  // Upwards
+                circularBuffer->buffer[i].pos.y += circularBuffer->buffer[i].velocity.y;
+                circularBuffer->buffer[i].radius -= 0.15f;      
+
+                // If radius too small, particle dies
+                if (circularBuffer->buffer[i].radius <= 0.02f) circularBuffer->buffer[i].alive = false;
+            } break;
+
+            case PARTICLE_FLASH:
+            {
+                circularBuffer->buffer[i].pos.x += (rand() % 10) * 1.0f;
+                circularBuffer->buffer[i].pos.y += (rand() % 10) * 1.0f;
+                circularBuffer->buffer[i].radius += 2.0f;
+                circularBuffer->buffer[i].lifeTime += 0.25f;
+
+                if (circularBuffer->buffer[i].lifeTime >= 1.0f) 
+                {
+                    circularBuffer->buffer[i].alive = false;
+                }
+            }break;
+            default: break;
+        }
+    }
+}
+
+void UpdateCircularBuffer(CircularBuffer *circularBuffer){
+     while ((circularBuffer->tail != circularBuffer->head) && !circularBuffer->buffer[circularBuffer->tail].alive)
+    {
+        circularBuffer->tail = (circularBuffer->tail + 1)%MAX_PARTICLES;
+    }
+}
+
+
+void drawParticles(CircularBuffer *circularBuffer){
+
+    for (int i = circularBuffer->tail; i != circularBuffer->head; i = (i + 1)%MAX_PARTICLES)
+    {
+        if (circularBuffer->buffer[i].alive)
+        {
+            DrawCircleV(circularBuffer->buffer[i].pos,
+                        circularBuffer->buffer[i].radius,
+                        circularBuffer->buffer[i].color);
+        }
+    }
+
+}
+
+
+
+
 
 void drawGame(GameContext* ctxPtr, float dt) {
+
+
+    updateParticles(&circularBuffer, GetScreenWidth(), GetScreenHeight());
+
+    UpdateCircularBuffer(&circularBuffer);
+
     BeginDrawing();
         switch (ctxPtr->currentState) {
             case GAME_MAIN_MENU:

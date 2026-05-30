@@ -4,6 +4,7 @@
 #include <string.h>
 #include "items.h"
 #include "enemy.h"
+#include "../core/game.h"
 
 
 static Texture2D enemyHealthColumn;
@@ -48,14 +49,13 @@ void enemyAttack(Player* player, Enemy* enemy){
 }
 
 void drawEnemyHealthBar(Enemy* enemy){
-    int screenW = GetScreenWidth();
-    int screenH = GetScreenHeight();
+
 
     const int COLUMN_HEIGHT = 16;
 
     int totalColumns = enemy->health;
 
-    int xOffset = screenW - 700;
+    int xOffset = GetScreenWidth() - 700;
     int yOffset = 100;
 
     for(int i =0; i<totalColumns; i++){
@@ -70,4 +70,6 @@ void drawEnemyHealthBar(Enemy* enemy){
 
 void drawEnemy(Enemy* enemy){
     drawEnemyHealthBar(enemy);
+
+    
 }

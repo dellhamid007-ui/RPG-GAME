@@ -13,16 +13,21 @@
 
 
 GameContext *ctxPtr = NULL;
+
+
 int windowWidth;
 int windowHeight;
 
+int screenWidth;
+int screenHeight;
 
 void initGame(void) {
+
     SetTargetFPS(30);
     int monitor = GetCurrentMonitor();
     
-    int screenWidth = GetMonitorWidth(monitor);
-    int screenHeight = GetMonitorHeight(monitor);
+    screenWidth = GetMonitorWidth(monitor);
+    screenHeight = GetMonitorHeight(monitor);
 
     windowWidth = screenWidth * 0.8;
     windowHeight = screenHeight * 0.8;

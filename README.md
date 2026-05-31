@@ -1,2 +1,3 @@
 # RPG-GAME
-basic console based rpg game
+
+## 2d RPG Game using Raylib

@@ -6,6 +6,7 @@
 #include "items.h"
 #include "enemy.h"
 #include "world.h"
+#include "../ui/hud.h"
 #include "../../libs/raylib/include/raylib.h"
 #include "../../libs/raylib/include/raymath.h"
 
@@ -448,8 +449,14 @@ static Texture2D createLightTexture(int radius){
 }
 
 
-void playerDraw(const Player* p) {
+void drawPlayer(Player* p) {
     DrawRectangle(p->pos.x, p->pos.y, PLAYER_WIDTH, PLAYER_HEIGHT, BLUE);
+}
+
+void drawPlayerFight(Player* p){
+    drawHud(p);
+
+
 }
 
 

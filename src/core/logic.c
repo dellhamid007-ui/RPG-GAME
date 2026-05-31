@@ -16,6 +16,7 @@
 
 extern GameContext* ctxPtr;
 extern menuState defaultState;
+extern CircularBuffer circularBuffer;
 
 
 void saveGame(Player *player){
@@ -122,6 +123,9 @@ void updateFight(GameContext* ctxPtr, float dt) {
             if(playerUseItem(ctxPtr->player, ctxPtr->activeEnemy) == 1){
                 ctxPtr->battle.turn = TURN_ENEMY;
                 ctxPtr->player->cooldown--;
+
+                emitParticle(&circularBuffer, (Vector2){GetScreenHeight()/2.0f,GetScreenWidth()/2.0f}, PARTICLE_BLOOD);
+
 
                 if (ctxPtr->activeEnemy->health <= 0){ 
                     ctxPtr->activeEnemy->health = 0;

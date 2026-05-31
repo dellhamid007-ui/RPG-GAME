@@ -16,7 +16,7 @@
 #include "render.h"
 
 
-#define MAX_PARTICLES 1000
+#define MAX_PARTICLES 250
 
 extern GameContext* ctxPtr;
 
@@ -28,7 +28,6 @@ CircularBuffer circularBuffer;
 
 Font regularFont = {0};
 
-void emitParticle(CircularBuffer *circularBuffer, Vector2 emitterPosition, particleType type);
 Particle *addToCircularBuffer(CircularBuffer *circularBuffer);
 void updateParticles(CircularBuffer *circularBuffer, int screenWidth, int screenHeight);
 void updateCircularBuffer(CircularBuffer *circularBuffer);
@@ -36,7 +35,7 @@ void drawParticles(CircularBuffer *circularBuffer);
 
 
 void initRender(){
-    regularFont = LoadFontEx("/home/midou/Projects/RPG-GAME/assets/fonts/cinzel.ttf", 70, NULL, 0);
+    regularFont = LoadFontEx("./assets/fonts/cinzel.ttf", 70, NULL, 0);
 
     SetTextureFilter(regularFont.texture, TEXTURE_FILTER_BILINEAR);
 
@@ -98,16 +97,12 @@ void drawControlsCorner(GameContext* ctxPtr, float dt){
 
 void drawFreeRoam(GameContext* ctxPtr, float dt)
 {
-    emitParticle(&circularBuffer, ctxPtr->player->pos, PARTICLE_FLASH);
-
 
     ClearBackground(BLACK);
 
-        ClearBackground(BLACK);
-
         BeginMode2D(ctxPtr->camera);
             worldDraw();
-            playerDraw(ctxPtr->player);
+            drawPlayer(ctxPtr->player);
             drawParticles(&circularBuffer);
 
         EndMode2D();
@@ -198,14 +193,21 @@ void drawControlsScreen(GameContext* ctxPtr, float dt){
 }
 
 
+void drawFightStage(){
+    ClearBackground(MAGENTA);
+}
+
 
 
 void drawFight(GameContext* ctxPtr, float dt){
 
     ClearBackground(WHITE);
 
-    drawHud(ctxPtr->player);
+    drawFightStage();
+
     drawEnemy((ctxPtr->activeEnemy));
+    drawPlayerFight(ctxPtr->player);
+    drawParticles(&circularBuffer);
 
     drawControlsCorner(ctxPtr, dt);
 

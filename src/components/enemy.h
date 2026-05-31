@@ -14,7 +14,6 @@ typedef enum enemyClass{
     Spider
 } enemyClass;
 
-
 typedef struct Enemy{
     enemyClass eClass;
     int level;

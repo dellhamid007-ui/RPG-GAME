@@ -11,6 +11,8 @@ static Texture2D enemyHealthColumn;
 static Texture2D enemyHealthFrame;
 
 
+extern Font regularFont;
+
 void loadEnemyAssets(){
     enemyHealthColumn = LoadTexture("assets/hud/enemyHealthColumn.png");
     enemyHealthFrame = LoadTexture("assets/hud/enemyHealthFrame.png");
@@ -48,8 +50,47 @@ void enemyAttack(Player* player, Enemy* enemy){
     }
 }
 
-void drawEnemyHealthBar(Enemy* enemy){
+int getColumnSize(Enemy* enemy){
+    return (200/enemy->health);
+}
 
+void drawEnemyHealthBar(Enemy* enemy, int xOffset, int yOffset, int totalColumns){
+
+    static int COLUMN_SIZE = 0;
+    if(COLUMN_SIZE == 0) COLUMN_SIZE = getColumnSize(enemy);
+
+    for(int i =0; i<totalColumns; i++){
+        int x = xOffset + i*2*COLUMN_SIZE;
+
+        DrawTexturePro(enemyHealthColumn,(Rectangle){0,0,1,16}, (Rectangle){x,yOffset, 2*COLUMN_SIZE, 64}, (Vector2){0,0}, 0.0f, WHITE);
+    }
+
+    DrawTexturePro(enemyHealthFrame,(Rectangle){0,0,202,18}, (Rectangle){xOffset-1, yOffset-1, 404, 66}, (Vector2){0,0}, 0.0f, WHITE);
+
+    switch(enemy->eClass){
+        case Skeleton:{
+            DrawTextEx(regularFont, "Skeleton", (Vector2){xOffset, yOffset + 72}, 32, 2, BLACK);
+        }break;
+        case Zombie:{
+            DrawTextEx(regularFont, "Zombie", (Vector2){xOffset, yOffset + 72}, 32, 2, BLACK);
+
+        }break;
+        case Witch:{
+            DrawTextEx(regularFont, "Witch", (Vector2){xOffset, yOffset + 72}, 32, 2, BLACK);
+
+        }break;
+        case Spider:{
+            DrawTextEx(regularFont, "Spider", (Vector2){xOffset, yOffset + 72}, 32, 2, BLACK);
+
+        }break;
+
+        default: break;
+    }
+    
+}
+
+
+void drawEnemy(Enemy* enemy){
 
     const int COLUMN_HEIGHT = 16;
 
@@ -58,18 +99,30 @@ void drawEnemyHealthBar(Enemy* enemy){
     int xOffset = GetScreenWidth() - 700;
     int yOffset = 100;
 
-    for(int i =0; i<totalColumns; i++){
-        int x = xOffset + i*2;
+    drawEnemyHealthBar(enemy,xOffset,yOffset,totalColumns);
 
-        DrawTexturePro(enemyHealthColumn,(Rectangle){0,0,1,16}, (Rectangle){x,yOffset, 2, 64}, (Vector2){0,0}, 0.0f, WHITE);
+
+    Vector2 enemyPOS = {xOffset + 250, yOffset + 200};
+
+    switch(enemy->eClass){
+        case Skeleton:{
+            DrawRectangle(enemyPOS.x,enemyPOS.y, 96, 96, GRAY);
+        }break;
+        case Zombie:{
+            DrawRectangle(enemyPOS.x,enemyPOS.y, 96, 96, GREEN);
+
+        }break;
+        case Witch:{
+            DrawRectangle(enemyPOS.x,enemyPOS.y, 96, 96, PURPLE);
+
+        }break;
+        case Spider:{
+            DrawRectangle(enemyPOS.x,enemyPOS.y, 96, 96, BLACK);
+
+        }break;
+
+        default: break;
     }
-
-    DrawTexturePro(enemyHealthFrame,(Rectangle){0,0,202,18}, (Rectangle){xOffset-1, yOffset-1, 404, 66}, (Vector2){0,0}, 0.0f, WHITE);
-}
-
-
-void drawEnemy(Enemy* enemy){
-    drawEnemyHealthBar(enemy);
-
+    
     
 }

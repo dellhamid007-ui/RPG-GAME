@@ -38,6 +38,8 @@ typedef struct CircularBuffer{
 
 void initRender();
 void drawGame(GameContext* ctxPtr, float dt);
+void emitParticle(CircularBuffer *circularBuffer, Vector2 emitterPosition, particleType type);
+
 
 
 

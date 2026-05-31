@@ -73,7 +73,8 @@ Player* loadPlayer();
 
 Rectangle playerGetHitbox(Player* player);
 void playerInit(void);
-void playerDraw(const Player* p);
+void drawPlayer(Player* p);
+void drawPlayerFight(Player* p);
 void playerUnload(void);
 void playerDrawLighting(const Player* player, Camera2D camera);
 void destroyPlayer(Player* p);

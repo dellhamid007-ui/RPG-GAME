@@ -55,7 +55,7 @@ void initGame(void) {
     ctxPtr->currentState = GAME_MAIN_MENU;
     ctxPtr->activeEnemy = NULL;
     
-    ctxPtr->encounterThreshold = 200.0f;
+    ctxPtr->encounterThreshold = 2000.0f;
     ctxPtr->encounterDistance = 0.0f;
 
 

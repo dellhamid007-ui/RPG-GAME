@@ -25,12 +25,16 @@ Enemy* createEnemy(enemyClass eClass, int level){
     ePtr->eClass = eClass;
     ePtr->level = level;
     switch(level){
-        case 1: ePtr->health = 0.5 *ENEMY_MAX_HEALTH; ePtr->defense = 10; ePtr->damage = 5; break;
-        case 2: ePtr->health = 0.6 *ENEMY_MAX_HEALTH; ePtr->defense = 15; ePtr->damage = 6; break;
-        case 3: ePtr->health = 0.7 *ENEMY_MAX_HEALTH; ePtr->defense = 20; ePtr->damage = 7; break;
-        case 4: ePtr->health = 0.8 *ENEMY_MAX_HEALTH; ePtr->defense = 25; ePtr->damage = 8; break;
-        case 5: ePtr->health = 0.9 *ENEMY_MAX_HEALTH; ePtr->defense = 30; ePtr->damage = 9; break;
+        case 1: ePtr->maxHealth = 0.5 *ENEMY_MAX_HEALTH; ePtr->defense = 10; ePtr->damage = 5; break;
+        case 2: ePtr->maxHealth = 0.6 *ENEMY_MAX_HEALTH; ePtr->defense = 15; ePtr->damage = 6; break;
+        case 3: ePtr->maxHealth = 0.7 *ENEMY_MAX_HEALTH; ePtr->defense = 20; ePtr->damage = 7; break;
+        case 4: ePtr->maxHealth = 0.8 *ENEMY_MAX_HEALTH; ePtr->defense = 25; ePtr->damage = 8; break;
+        case 5: ePtr->maxHealth = 0.9 *ENEMY_MAX_HEALTH; ePtr->defense = 30; ePtr->damage = 9; break;
     }
+
+    ePtr->health = ePtr->maxHealth;
+
+
     return ePtr;
 }
 
@@ -50,22 +54,20 @@ void enemyAttack(Player* player, Enemy* enemy){
     }
 }
 
-int getColumnSize(Enemy* enemy){
-    return (200/enemy->health);
-}
 
 void drawEnemyHealthBar(Enemy* enemy, int xOffset, int yOffset, int totalColumns){
 
-    static int COLUMN_SIZE = 0;
-    if(COLUMN_SIZE == 0) COLUMN_SIZE = getColumnSize(enemy);
+    float healthPercentage = (float)enemy->health / (float)enemy->maxHealth;
+    
+    float maxWidth = 400.0f;
+    
+    float currentWidth = maxWidth * healthPercentage;
 
-    for(int i =0; i<totalColumns; i++){
-        int x = xOffset + i*2*COLUMN_SIZE;
+    DrawTexturePro(enemyHealthColumn, (Rectangle){0, 0, 202, 18}, (Rectangle){xOffset, yOffset, currentWidth, 64}, (Vector2){0, 0}, 0.0f, WHITE);
 
-        DrawTexturePro(enemyHealthColumn,(Rectangle){0,0,1,16}, (Rectangle){x,yOffset, 2*COLUMN_SIZE, 64}, (Vector2){0,0}, 0.0f, WHITE);
-    }
+    
+    DrawTexturePro(enemyHealthFrame, (Rectangle){0, 0, 202, 18}, (Rectangle){xOffset, yOffset, 400, 64}, (Vector2){0, 0}, 0.0f, WHITE);
 
-    DrawTexturePro(enemyHealthFrame,(Rectangle){0,0,202,18}, (Rectangle){xOffset-1, yOffset-1, 404, 66}, (Vector2){0,0}, 0.0f, WHITE);
 
     switch(enemy->eClass){
         case Skeleton:{
@@ -94,12 +96,10 @@ void drawEnemy(Enemy* enemy){
 
     const int COLUMN_HEIGHT = 16;
 
-    int totalColumns = enemy->health;
-
     int xOffset = GetScreenWidth() - 700;
     int yOffset = 100;
 
-    drawEnemyHealthBar(enemy,xOffset,yOffset,totalColumns);
+    drawEnemyHealthBar(enemy,xOffset,yOffset,enemy->maxHealth);
 
 
     Vector2 enemyPOS = {xOffset + 250, yOffset + 200};

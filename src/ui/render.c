@@ -19,7 +19,7 @@
 #define MAX_PARTICLES 250
 
 extern GameContext* ctxPtr;
-
+extern bool isPlayerMoving;
 
 menuState defaultState = mainMenuOption;
 
@@ -102,7 +102,8 @@ void drawFreeRoam(GameContext* ctxPtr, float dt)
 
         BeginMode2D(ctxPtr->camera);
             worldDraw();
-            drawPlayer(ctxPtr->player);
+            if(isPlayerMoving) drawPlayerWalking(ctxPtr->player);
+            else drawPlayerIdle(ctxPtr->player);
             drawParticles(&circularBuffer);
 
         EndMode2D();

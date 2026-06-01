@@ -19,6 +19,8 @@ extern menuState defaultState;
 extern CircularBuffer circularBuffer;
 
 
+bool isPlayerMoving = false;
+
 void saveGame(Player *player){
     savePlayer(player);
     worldSave();
@@ -56,6 +58,7 @@ void updateFreeRoam(GameContext* ctxPtr, float dt) {
     ctxPtr->encounterDistance += moved;
 
     if (ctxPtr->encounterDistance >= ctxPtr->encounterThreshold) {
+        isPlayerMoving = false;
         initRandomEncounter(ctxPtr);
         ctxPtr->encounterDistance = 0.0f;
     }

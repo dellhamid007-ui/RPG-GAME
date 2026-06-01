@@ -20,6 +20,8 @@ typedef struct Enemy{
     int damage;
     int health;
     int defense;
+
+    int maxHealth;
 }Enemy;
 
 

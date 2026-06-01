@@ -16,6 +16,12 @@ static Texture2D lightGradient;
 static Texture2D createLightTexture(int radius);
 
 
+static Texture2D playerWalking;
+static Texture2D playerIdle = {0};
+
+
+extern bool isPlayerMoving;
+
 void playerLightingInit(void){
     lightMask = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
     lightGradient = createLightTexture(180);
@@ -30,7 +36,9 @@ void playerLightingUnload(void){
 
 
 void playerInit(void){
-
+    playerWalking = LoadTexture("./assets/sprites/Player/PlayerWalking.png");
+    playerIdle = LoadTexture("./assets/sprites/Player/PlayerIdle.png");
+    if(playerIdle.id == 0) printf("texture not loaded");    
 }
 
 void playerUnload(void){
@@ -234,6 +242,8 @@ void movePlayer(Player* player)
     if (IsKeyDown(KEY_W)) dy -= MOVMENT_SPEED;
     if (IsKeyDown(KEY_S)) dy += MOVMENT_SPEED;
 
+    if(dx || dy) isPlayerMoving = true;
+    else isPlayerMoving = false;
     
     if (dx != 0 && dy != 0) {
         float factor = 1.0f / sqrtf(2);
@@ -449,8 +459,18 @@ static Texture2D createLightTexture(int radius){
 }
 
 
-void drawPlayer(Player* p) {
-    DrawRectangle(p->pos.x, p->pos.y, PLAYER_WIDTH, PLAYER_HEIGHT, BLUE);
+
+
+
+void drawPlayerWalking(Player* p) {
+    DrawTexturePro(playerWalking,(Rectangle){0,0,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+
+}
+
+
+void drawPlayerIdle(Player* p){
+    DrawTexturePro(playerIdle,(Rectangle){0,0,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+
 }
 
 void drawPlayerFight(Player* p){

@@ -49,6 +49,8 @@ typedef struct Player {
     Item* inventory[MAX_INVENTORY];
     int inventory_count;
     int selectedItem;
+
+    Direction dir;
 } Player;
 
 

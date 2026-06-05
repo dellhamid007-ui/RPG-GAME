@@ -81,7 +81,7 @@ void worldInit(void) {
 int worldCanMove(Rectangle nextPos)
 {
     int leftTile   = nextPos.x / TILE_SIZE;
-    int rightTile  = (nextPos.x + nextPos.width) / TILE_SIZE;
+    int rightTile  = (nextPos.x + 3 + nextPos.width / 2) / TILE_SIZE;
     int topTile    = nextPos.y / TILE_SIZE;
     int bottomTile = (nextPos.y + nextPos.height) / TILE_SIZE;
 

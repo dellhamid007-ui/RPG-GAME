@@ -22,6 +22,11 @@ static Texture2D playerIdle = {0};
 
 extern bool isPlayerMoving;
 
+
+int frameNumber = 0;
+int frameTime = 0;
+
+
 void playerLightingInit(void){
     lightMask = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
     lightGradient = createLightTexture(180);
@@ -132,6 +137,8 @@ Player* loadPlayer(){
     printf("x = %.2f , y = %.2f", player->pos.x, player->pos.y);        
 
     fclose(playerFile);
+
+    player->dir = North;
     
     return player;
 }
@@ -189,7 +196,6 @@ void savePlayer(Player* player){
     fclose(playerFile);
     printf("Debug: Player saved successfully to\n");
 
-
 }
 
 Player* createPlayer(char* name, Magic magic){
@@ -217,6 +223,7 @@ Player* createPlayer(char* name, Magic magic){
     p->pos.x = rand () % MAP_H * TILE_SIZE + 1;
     p->pos.y = rand () % MAP_W * TILE_SIZE + 1;
 
+    p->dir = North;
 
     return p;
 }
@@ -237,10 +244,10 @@ void movePlayer(Player* player)
     Vector2 nextPos = player->pos;
     float dx = 0, dy = 0;
 
-    if (IsKeyDown(KEY_D)) dx += MOVMENT_SPEED;
-    if (IsKeyDown(KEY_A)) dx -= MOVMENT_SPEED;
-    if (IsKeyDown(KEY_W)) dy -= MOVMENT_SPEED;
-    if (IsKeyDown(KEY_S)) dy += MOVMENT_SPEED;
+    if (IsKeyDown(KEY_D)) {dx += MOVMENT_SPEED; player->dir = East ;}
+    if (IsKeyDown(KEY_A)) {dx -= MOVMENT_SPEED; player->dir = West ;}
+    if (IsKeyDown(KEY_W)) {dy -= MOVMENT_SPEED; player->dir = North ;}
+    if (IsKeyDown(KEY_S)) {dy += MOVMENT_SPEED; player->dir = South ;}
 
     if(dx || dy) isPlayerMoving = true;
     else isPlayerMoving = false;
@@ -460,16 +467,69 @@ static Texture2D createLightTexture(int radius){
 
 
 
-
-
 void drawPlayerWalking(Player* p) {
-    DrawTexturePro(playerWalking,(Rectangle){0,0,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+
+    switch(p->dir){
+        case South:{
+            if(frameNumber > 3) frameNumber = 0;
+            DrawTexturePro(playerWalking,(Rectangle){48 * frameNumber,0,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+            if(frameTime >= 15){frameNumber ++; frameTime = 0;}
+            frameTime++;
+        }break;
+        case East:{
+            if(frameNumber > 3) frameNumber = 0;
+            DrawTexturePro(playerWalking,(Rectangle){48 * frameNumber,96,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+            if(frameTime >= 15){frameNumber ++; frameTime = 0;}
+            frameTime++;
+        }break;
+        case West:{
+            if(frameNumber > 3) frameNumber = 0;
+            DrawTexturePro(playerWalking,(Rectangle){48 * frameNumber,48,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+            if(frameTime >= 15){frameNumber ++; frameTime = 0;}
+            frameTime++;
+        }break;
+        case North:{
+            if(frameNumber > 3) frameNumber = 0;
+            DrawTexturePro(playerWalking,(Rectangle){48 * frameNumber,144,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+            if(frameTime >= 15){frameNumber ++; frameTime = 0;}
+            frameTime++;
+        }break;
+        default: break;
+    }
+
+    
 
 }
 
 
 void drawPlayerIdle(Player* p){
-    DrawTexturePro(playerIdle,(Rectangle){0,0,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+    switch(p->dir){
+        case South:{
+            if(frameNumber > 3) frameNumber = 0;
+            DrawTexturePro(playerIdle,(Rectangle){48 * frameNumber,0,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+            if(frameTime >= 15){frameNumber ++; frameTime = 0;}
+            frameTime++;
+        }break;
+        case East:{
+            if(frameNumber > 3) frameNumber = 0;
+            DrawTexturePro(playerIdle,(Rectangle){48 * frameNumber,96,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+            if(frameTime >= 15){frameNumber ++; frameTime = 0;}
+            frameTime++;
+        }break;
+        case West:{
+            if(frameNumber > 3) frameNumber = 0;
+            DrawTexturePro(playerIdle,(Rectangle){48 * frameNumber,48,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+            if(frameTime >= 15){frameNumber ++; frameTime = 0;}
+            frameTime++;
+        }break;
+        case North:{
+            if(frameNumber > 3) frameNumber = 0;
+            DrawTexturePro(playerIdle,(Rectangle){48 * frameNumber,144,48,48},(Rectangle){p->pos.x,p->pos.y,32,32},(Vector2){8,8},0.0f,WHITE);
+            if(frameTime >= 15){frameNumber ++; frameTime = 0;}
+            frameTime++;
+        }break;
+        default: break;
+    }
 
 }
 
